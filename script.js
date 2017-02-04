@@ -29,8 +29,25 @@ $( document ).ready(function() {
 		.done(function(data) {
 			console.log("GET success");
 			out = $($.parseHTML('<div>' + data.parse.text["*"] + '</div>'));
+
+			out.find('p').children('sup').remove();
+			html = '';
+			out.find('p').each(function() { html += $(this).html() + ' '; });
+			split = html.split('</a>.');
+			if ( split.length == 1 ) {
+				console.log('No link at the end of a sentence found.')
+				return
+			}
+			var sentence = $($.parseHTML('<div>' + split[0] + '</a>.</div>'));
+			var last_a = sentence.find('a:last');
+
+			var next_entry = last_a.attr('href').split('/wiki/')[1];
+			var next_entry_title = last_a.attr('title');
+			console.log(next_entry_title);
+			$('#content').text(sentence.text());
 		})
 		.fail(function() {
 			console.log("Error: ", query);
 		});
 });
+
