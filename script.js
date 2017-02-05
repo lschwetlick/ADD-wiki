@@ -1,13 +1,17 @@
 var out;
 
 $( document ).ready(function() {
+	var $form = $("form#wiki");
+	var $output = $('#articles');
+	var $outputElement = $('<p>');
+
 	var pageids = [];
-	$( "form#wiki" ).submit(function( event ) {
+	$form.submit(function( event ) {
 		event.preventDefault();
 		var start_article = $(this).find("input[type=text]").val();
 		console.log( "Start: ", start_article );
 		pageids = [];
-		$('#articles').empty();
+		$output.empty();
 		getWikiSentence(start_article);
 	});
 
@@ -64,6 +68,7 @@ $( document ).ready(function() {
 				return null
 			}
 		}
+		//TODO make "ADD-level" configurable, e.g. use last possible link
 		return split[0] + divider;
 	}
 
@@ -82,8 +87,8 @@ $( document ).ready(function() {
 		} else {
 			sentence = sentence_dom.text();
 		}
-		$('#articles').append(
-			$('<p>').html(sentence)
+		$output.append(
+			$outputElement.clone().html(sentence)
 		);
 	}
 
