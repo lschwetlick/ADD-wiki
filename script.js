@@ -29,7 +29,9 @@ $( document ).ready(function() {
 		/* "callback=?" makes jquery pick a custom name for the callback.
 		JQuery then knows to set the datatype to JSONP.
 		The server wraps the requested JSON in a function call with the callback's name.*/
-		return wiki_api_base + $.param(params) + "&callback=?";
+		var query_url = wiki_api_base + $.param(params) + "&callback=?";
+		console.log(query_url);
+		return query_url
 	}
 
 	/* Returns a parsed structure queryable with JQuery from an HTML string */
@@ -65,42 +67,49 @@ $( document ).ready(function() {
 		return split[0] + divider;
 	}
 
+	/* Return the name of the page linked to from the last <a> tag */
+	function getNextEntryName(sentence_dom) {
+		var last_a = sentence_dom.children('a:last');
+		var next_entry = last_a.attr('href').split('/wiki/')[1];
+		console.log('Next: ', last_a.attr('title'));
+		return next_entry
+	}
+
 	/* Append text to the page */
 	function appendSentences(sentence_dom, include_markup) {
 		if ( include_markup ) {
-			sentence = sentence.html();
+			sentence = sentence_dom.html();
 		} else {
-			sentence = sentence.text();
+			sentence = sentence_dom.text();
 		}
 		$('#articles').append(
 			$('<p>').html(sentence)
 		);
 	}
 
+	/* Return whether the id was already queried, also stores passed ids */
+	function isRepetition(page_id) {
+		if ( pageids.indexOf(page_id) > -1 ) {
+			console.log('Repetition detected.');
+			return true
+		}
+		pageids.push(page_id);
+		return false
+	}
+
 	function getWikiSentence(page_title){
-		query_url = wikiApiUrl(page_title);
-		console.log(query_url);
-		$.getJSON( query_url )
+		$.getJSON( wikiApiUrl(page_title) )
 			.done(function(data) {
 				console.log("GET success");
+				if ( isRepetition(data.parse.pageid) ) { return }
 				var html = cleanWikiHTML(data.parse.text["*"]);
 				var sentence = parseForSentence(html);
 				if (sentence === null) { return }
-				sentence = parseToDOM(sentence);
-				var last_a = sentence.children('a:last');
-
-				var next_entry = last_a.attr('href').split('/wiki/')[1];
-				var next_entry_title = last_a.attr('title');
-				console.log('Next: ', next_entry_title);
-				var current_pageid = data.parse.pageid;
-				if ( pageids.indexOf(current_pageid) > -1 ) {
-					console.log('Repetition detected.');
-					return
-				}
+				var sentence_dom = parseToDOM(sentence);
 				// TODO checkbox for include_markup
-				appendSentences(sentence, true);
-				pageids.push(current_pageid);
-				getWikiSentence(next_entry_title);
+				appendSentences(sentence_dom, true);
+				var next_entry = getNextEntryName(sentence_dom);
+				getWikiSentence(next_entry);
 			})
 			.fail(function() {
 				console.log("Error: ", query);
