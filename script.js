@@ -79,6 +79,13 @@ $( document ).ready(function() {
 					console.log('Repition detected.')
 					return
 				}
+				// TODO checkbox
+				var include_markup = true;
+				if ( include_markup ) {
+					sentence = sentence.html();
+				} else {
+					sentence = sentence.text();
+				}
 				$('#articles').append($('<p>').html(sentence));
 				pageids.push(current_pageid);
 				getWikiSentence(next_entry_title);
