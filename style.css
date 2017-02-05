@@ -1,0 +1,9 @@
+body {
+	text-align: center;
+}
+
+#articles {
+	width: 800px;
+	text-align: justify;
+	display: inline-block;
+}

@@ -65,7 +65,7 @@ $( document ).ready(function() {
 				var next_entry = last_a.attr('href').split('/wiki/')[1];
 				var next_entry_title = last_a.attr('title');
 				console.log('Next: ', next_entry_title);
-				$('#content').append($('<p>').text(sentence.text()));
+				$('#articles').append($('<p>').text(sentence.text()));
 				if ( done.indexOf(next_entry) > -1 ) {
 					console.log('Repition detected.')
 					return
