@@ -1,11 +1,10 @@
-var out;
-
 $( document ).ready(function() {
 	var $form = $("form#wiki");
 	var $output = $('#articles');
 	var $outputElement = $('<p>');
-
 	var pageids = [];
+
+	/* Setup button handler */
 	$form.submit(function( event ) {
 		event.preventDefault();
 		var start_article = $(this).find("input[type=text]").val();
@@ -33,13 +32,12 @@ $( document ).ready(function() {
 		/* "callback=?" makes jquery pick a custom name for the callback.
 		JQuery then knows to set the datatype to JSONP.
 		The server wraps the requested JSON in a function call with the callback's name.*/
-		var query_url = wiki_api_base + $.param(params) + "&callback=?";
-		console.log(query_url);
-		return query_url
+		return wiki_api_base + $.param(params) + "&callback=?";
 	}
 
 	/* Returns a parsed structure queryable with JQuery from an HTML string */
 	function parseToDOM(html_string) {
+		// http://stackoverflow.com/questions/15403600
 		return $($.parseHTML('<div>' + html_string + '</div>'));
 	}
 
@@ -74,6 +72,7 @@ $( document ).ready(function() {
 
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
+		//TODO use first link and cut of the sentence to make it properly ADD.
 		var last_a = sentence_dom.children('a:last');
 		var next_entry = last_a.attr('href').split('/wiki/')[1];
 		console.log('Next: ', last_a.attr('title'));
@@ -103,9 +102,11 @@ $( document ).ready(function() {
 	}
 
 	function getWikiSentence(page_title){
-		$.getJSON( wikiApiUrl(page_title) )
-			.done(function(data) {
-				console.log("GET success");
+		var query_url = wikiApiUrl(page_title);
+		console.log(query_url);
+		//TODO save API results to localStorage for caching
+		$.getJSON( query_url )
+			.done(function(data){
 				if ( isRepetition(data.parse.pageid) ) { return }
 				var html = cleanWikiHTML(data.parse.text["*"]);
 				var sentence = parseForSentence(html);
@@ -116,9 +117,7 @@ $( document ).ready(function() {
 				var next_entry = getNextEntryName(sentence_dom);
 				getWikiSentence(next_entry);
 			})
-			.fail(function() {
-				console.log("Error: ", query);
-			});
+			.fail(function() { console.log("Error: ", query_url); });
 	}
 });
 
