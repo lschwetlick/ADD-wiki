@@ -4,7 +4,8 @@ $( document ).ready(function() {
 	$( "form#wiki" ).submit(function( event ) {
 		event.preventDefault();
 		var start_article = $(this).find("input[type=text]").val();
-		console.log( "start_article: ", start_article );
+		console.log( "Start: ", start_article );
+		getWikiSentence(start_article);
 	});
 
 	/* Returns the query URL for the Wikipedia API of a given page */
@@ -33,29 +34,31 @@ $( document ).ready(function() {
 		return $($.parseHTML('<div>' + html_string + '</div>'));
 	}
 
-	$.getJSON( wikiApiUrl('Stack Overflow') )
-		.done(function(data) {
-			console.log("GET success");
-			out = parseToDOM(data.parse.text["*"]);
+	function getWikiSentence(page_title){
+		$.getJSON( wikiApiUrl(page_title) )
+			.done(function(data) {
+				console.log("GET success");
+				out = parseToDOM(data.parse.text["*"]);
 
-			out.find('p').children('sup').remove();
-			html = '';
-			out.find('p').each(function() { html += $(this).html() + ' '; });
-			split = html.split('</a>.');
-			if ( split.length == 1 ) {
-				console.log('No link at the end of a sentence found.')
-				return
-			}
-			var sentence = parseToDOM(split[0]);
-			var last_a = sentence.find('a:last');
+				out.find('p').children('sup').remove();
+				html = '';
+				out.find('p').each(function() { html += $(this).html() + ' '; });
+				split = html.split('</a>.');
+				if ( split.length == 1 ) {
+					console.log('No link at the end of a sentence found.')
+					return
+				}
+				var sentence = parseToDOM(split[0] + '</a>.');
+				var last_a = sentence.find('a:last');
 
-			var next_entry = last_a.attr('href').split('/wiki/')[1];
-			var next_entry_title = last_a.attr('title');
-			console.log(next_entry_title);
-			$('#content').text(sentence.text());
-		})
-		.fail(function() {
-			console.log("Error: ", query);
-		});
+				var next_entry = last_a.attr('href').split('/wiki/')[1];
+				var next_entry_title = last_a.attr('title');
+				console.log('Next: ', next_entry_title);
+				$('#content').text(sentence.text());
+			})
+			.fail(function() {
+				console.log("Error: ", query);
+			});
+	}
 });
 
