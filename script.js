@@ -50,6 +50,21 @@ $( document ).ready(function() {
 		return html
 	}
 
+	/* Returns a text up to a sentence that ends with an <a> tag */
+	function parseForSentence(html_string) {
+		var divider = '</a>.';
+		split = html_string.split(divider);
+		if ( split.length == 1 ) {
+			divider = '</a>).';
+			split = html_string.split(divider);
+			if ( split.length == 1 ) {
+				console.log('No link at the end of a sentence found.')
+				return null
+			}
+		}
+		return split[0] + divider;
+	}
+
 	function getWikiSentence(page_title){
 		query_url = wikiApiUrl(page_title);
 		console.log(query_url);
@@ -57,18 +72,9 @@ $( document ).ready(function() {
 			.done(function(data) {
 				console.log("GET success");
 				var html = cleanWikiHTML(data.parse.text["*"]);
-				var divider = '</a>.';
-				split = html.split(divider);
-				if ( split.length == 1 ) {
-					divider = '</a>).';
-					split = html.split(divider);
-					if ( split.length == 1 ) {
-						console.log('No link at the end of a sentence found.')
-						return
-					}
-				}
-				console.log(split[0]);
-				var sentence = parseToDOM(split[0] + divider);
+				var sentence = parseForSentence(html);
+				if (sentence === null) { return }
+				sentence = parseToDOM(sentence);
 				var last_a = sentence.children('a:last');
 
 				var next_entry = last_a.attr('href').split('/wiki/')[1];
