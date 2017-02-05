@@ -65,6 +65,18 @@ $( document ).ready(function() {
 		return split[0] + divider;
 	}
 
+	/* Append text to the page */
+	function appendSentences(sentence_dom, include_markup) {
+		if ( include_markup ) {
+			sentence = sentence.html();
+		} else {
+			sentence = sentence.text();
+		}
+		$('#articles').append(
+			$('<p>').html(sentence)
+		);
+	}
+
 	function getWikiSentence(page_title){
 		query_url = wikiApiUrl(page_title);
 		console.log(query_url);
@@ -82,17 +94,11 @@ $( document ).ready(function() {
 				console.log('Next: ', next_entry_title);
 				var current_pageid = data.parse.pageid;
 				if ( pageids.indexOf(current_pageid) > -1 ) {
-					console.log('Repition detected.')
+					console.log('Repetition detected.');
 					return
 				}
-				// TODO checkbox
-				var include_markup = true;
-				if ( include_markup ) {
-					sentence = sentence.html();
-				} else {
-					sentence = sentence.text();
-				}
-				$('#articles').append($('<p>').html(sentence));
+				// TODO checkbox for include_markup
+				appendSentences(sentence, true);
 				pageids.push(current_pageid);
 				getWikiSentence(next_entry_title);
 			})
