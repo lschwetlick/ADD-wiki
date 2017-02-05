@@ -34,27 +34,44 @@ $( document ).ready(function() {
 		return $($.parseHTML('<div>' + html_string + '</div>'));
 	}
 
+	var done = [];
 	function getWikiSentence(page_title){
-		$.getJSON( wikiApiUrl(page_title) )
+		query_url = wikiApiUrl(page_title);
+		console.log(query_url);
+		$.getJSON( query_url )
 			.done(function(data) {
 				console.log("GET success");
 				out = parseToDOM(data.parse.text["*"]);
 
-				out.find('p').children('sup').remove();
+				out.children('p').children('sup').remove();
+				// The box showing coordinates is part of the main html
+				out.children('p').find('span#coordinates').remove();
 				html = '';
-				out.find('p').each(function() { html += $(this).html() + ' '; });
-				split = html.split('</a>.');
+				out.children('p').each(function() { html += $(this).html() + ' '; });
+				var divider = '</a>.';
+				split = html.split(divider);
 				if ( split.length == 1 ) {
-					console.log('No link at the end of a sentence found.')
-					return
+					divider = '</a>).';
+					split = html.split(divider);
+					if ( split.length == 1 ) {
+						console.log('No link at the end of a sentence found.')
+						return
+					}
 				}
-				var sentence = parseToDOM(split[0] + '</a>.');
-				var last_a = sentence.find('a:last');
+				console.log(split[0]);
+				var sentence = parseToDOM(split[0] + divider);
+				var last_a = sentence.children('a:last');
 
 				var next_entry = last_a.attr('href').split('/wiki/')[1];
 				var next_entry_title = last_a.attr('title');
 				console.log('Next: ', next_entry_title);
-				$('#content').text(sentence.text());
+				$('#content').append($('<p>').text(sentence.text()));
+				if ( done.indexOf(next_entry) > -1 ) {
+					console.log('Repition detected.')
+					return
+				}
+				done.push(next_entry);
+				getWikiSentence(next_entry_title);
 			})
 			.fail(function() {
 				console.log("Error: ", query);
