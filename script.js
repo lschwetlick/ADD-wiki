@@ -37,19 +37,26 @@ $( document ).ready(function() {
 		return $($.parseHTML('<div>' + html_string + '</div>'));
 	}
 
+	/* Return HTML without elements that should not be rendered */
+	function cleanWikiHTML(html_string) {
+		temp_dom = parseToDOM(html_string);
+		temp_dom = temp_dom.children('p');
+		// Remove References of the form '[1]''
+		temp_dom.children('sup').remove();
+		// The box showing coordinates is part of the main html
+		temp_dom.find('span#coordinates').remove();
+		var html = '';
+		temp_dom.each(function() { html += $(this).html() + ' '; });
+		return html
+	}
+
 	function getWikiSentence(page_title){
 		query_url = wikiApiUrl(page_title);
 		console.log(query_url);
 		$.getJSON( query_url )
 			.done(function(data) {
 				console.log("GET success");
-				out = parseToDOM(data.parse.text["*"]);
-
-				out.children('p').children('sup').remove();
-				// The box showing coordinates is part of the main html
-				out.children('p').find('span#coordinates').remove();
-				html = '';
-				out.children('p').each(function() { html += $(this).html() + ' '; });
+				var html = cleanWikiHTML(data.parse.text["*"]);
 				var divider = '</a>.';
 				split = html.split(divider);
 				if ( split.length == 1 ) {
@@ -67,12 +74,12 @@ $( document ).ready(function() {
 				var next_entry = last_a.attr('href').split('/wiki/')[1];
 				var next_entry_title = last_a.attr('title');
 				console.log('Next: ', next_entry_title);
-				$('#articles').append($('<p>').text(sentence.text()));
 				var current_pageid = data.parse.pageid;
 				if ( pageids.indexOf(current_pageid) > -1 ) {
 					console.log('Repition detected.')
 					return
 				}
+				$('#articles').append($('<p>').html(sentence));
 				pageids.push(current_pageid);
 				getWikiSentence(next_entry_title);
 			})
