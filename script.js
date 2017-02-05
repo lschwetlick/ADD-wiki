@@ -1,10 +1,13 @@
 var out;
 
 $( document ).ready(function() {
+	var pageids = [];
 	$( "form#wiki" ).submit(function( event ) {
 		event.preventDefault();
 		var start_article = $(this).find("input[type=text]").val();
 		console.log( "Start: ", start_article );
+		pageids = [];
+		$('#articles').empty();
 		getWikiSentence(start_article);
 	});
 
@@ -34,7 +37,6 @@ $( document ).ready(function() {
 		return $($.parseHTML('<div>' + html_string + '</div>'));
 	}
 
-	var done = [];
 	function getWikiSentence(page_title){
 		query_url = wikiApiUrl(page_title);
 		console.log(query_url);
@@ -66,11 +68,12 @@ $( document ).ready(function() {
 				var next_entry_title = last_a.attr('title');
 				console.log('Next: ', next_entry_title);
 				$('#articles').append($('<p>').text(sentence.text()));
-				if ( done.indexOf(next_entry) > -1 ) {
+				var current_pageid = data.parse.pageid;
+				if ( pageids.indexOf(current_pageid) > -1 ) {
 					console.log('Repition detected.')
 					return
 				}
-				done.push(next_entry);
+				pageids.push(current_pageid);
 				getWikiSentence(next_entry_title);
 			})
 			.fail(function() {
