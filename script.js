@@ -63,11 +63,13 @@ $( document ).ready(function() {
 			split = html_string.split(divider);
 			if ( split.length == 1 ) {
 				console.log('No link at the end of a sentence found.')
-				return null
+				// false: No next wiki page available
+				return [split[0], false];
 			}
 		}
 		//TODO make "ADD-level" configurable, e.g. use last possible link
-		return split[0] + divider;
+		// true: Continue, sentence has a link at the end
+		return [split[0] + divider, true];
 	}
 
 	/* Return the name of the page linked to from the last <a> tag */
@@ -109,11 +111,11 @@ $( document ).ready(function() {
 			.done(function(data){
 				if ( isRepetition(data.parse.pageid) ) { return }
 				var html = cleanWikiHTML(data.parse.text["*"]);
-				var sentence = parseForSentence(html);
-				if (sentence === null) { return }
+				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
 				// TODO checkbox for include_markup
 				appendSentences(sentence_dom, true);
+				if ( !next_entry_available ) { return }
 				var next_entry = getNextEntryName(sentence_dom);
 				getWikiSentence(next_entry);
 			})
