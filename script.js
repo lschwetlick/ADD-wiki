@@ -49,6 +49,7 @@ $( document ).ready(function() {
 		temp_dom.children('sup').remove();
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
+		temp_dom.find('span.noexcerpt').remove();
 		var html = '';
 		temp_dom.each(function() { html += $(this).html() + ' '; });
 		return html
@@ -62,9 +63,13 @@ $( document ).ready(function() {
 			divider = '</a>).';
 			split = html_string.split(divider);
 			if ( split.length == 1 ) {
-				console.log('No link at the end of a sentence found.')
-				// false: No next wiki page available
-				return [split[0], false];
+				divider = '</a>;';
+				split = html_string.split(divider);
+				if ( split.length == 1 ) {
+					console.log('No link at the end of a sentence found.')
+					// false: No next wiki page available
+					return [split[0], false];
+				}
 			}
 		}
 		//TODO make "ADD-level" configurable, e.g. use last possible link
