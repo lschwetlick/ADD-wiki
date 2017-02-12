@@ -20,7 +20,8 @@ $( document ).ready(function() {
 		params = {
 			action: "parse",
 			format: "json",
-			page: page,
+			// Prevent double encode, page is already urlencoded
+			page: decodeURI(page),
 			redirects: 1,
 			prop: "text",
 			section: 0,
