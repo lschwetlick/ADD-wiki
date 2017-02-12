@@ -49,6 +49,7 @@ $( document ).ready(function() {
 		temp_dom.children('sup').remove();
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
+		// Remove links to pronunciation audio
 		temp_dom.find('span.noexcerpt').remove();
 		var html = '';
 		temp_dom.each(function() { html += $(this).html() + ' '; });
