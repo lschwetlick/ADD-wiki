@@ -1,3 +1,40 @@
+/*
+Return JSON from url, use browser's localStorage as cache
+JQuery extension, returns a promise.
+'cacheTimeMs' indicates the milliseconds after which the cache is invalidated.
+	Default is 24 hours.
+*/
+//Adapted from https://gist.github.com/contolini/6115380
+jQuery.extend({
+	getCachedJSON: function(url, cacheTimeMs = 86400000) {
+		var supportsLocalStorage = 'localStorage' in window;
+		// Both functions 'getJSON' and 'getCache' return a promise
+		function getJSON(url) {
+			var promise = $.getJSON(url);
+			promise.done(function(data) {
+				var cache = {data: data, timestamp: new Date().getTime()};
+				localStorage.setItem(url, JSON.stringify(cache));
+			});
+			console.log('%c' + url + ' (AJAX)', 'color: orange');
+			return promise;
+		}
+
+		function getCache(url) {
+			var stored = JSON.parse(localStorage.getItem(url));
+			if ( stored ) {
+				var validCache = (new Date().getTime() - stored.timestamp) < cacheTimeMs;
+				if ( validCache ) {
+					console.log('%c' + url + ' (localStorange)', 'color: blue');
+					return $.Deferred().resolve(stored.data).promise()
+				}
+			}
+			return getJSON(url);
+		}
+
+		return supportsLocalStorage ? getCache( url ) : getJSON( url );
+	}
+});
+
 $( document ).ready(function() {
 	var $form = $("form#wiki");
 	var $output = $('#articles');
@@ -109,9 +146,7 @@ $( document ).ready(function() {
 
 	function getWikiSentence(page_title){
 		var query_url = wikiApiUrl(page_title);
-		console.log(query_url);
-		//TODO save API results to localStorage for caching
-		$.getJSON( query_url )
+		$.getCachedJSON( query_url )
 			.done(function(data){
 				if ( isRepetition(data.parse.pageid) ) { return }
 				var html = cleanWikiHTML(data.parse.text["*"]);
