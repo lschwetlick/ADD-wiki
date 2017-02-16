@@ -1,12 +1,15 @@
 /*
 Return JSON from url, use browser's localStorage as cache
 JQuery extension, returns a promise.
-'cacheTimeMs' indicates the milliseconds after which the cache is invalidated.
+'cacheInvalidMs' indicates the milliseconds after which the cache is invalidated.
 	Default is 24 hours.
+'cacheDelayMs' indicates the milliseconds after which data from the cache is returned.
+	Can be used to simulate the delay of normal requests.
+	Default is 0.
 */
 //Adapted from https://gist.github.com/contolini/6115380
 jQuery.extend({
-	getCachedJSON: function(url, cacheTimeMs = 86400000) {
+	getCachedJSON: function(url, cacheDelayMs = 0, cacheInvalidMs = 86400000) {
 		var supportsLocalStorage = 'localStorage' in window;
 		// Both functions 'getJSON' and 'getCache' return a promise
 		function getJSON(url) {
@@ -22,10 +25,16 @@ jQuery.extend({
 		function getCache(url) {
 			var stored = JSON.parse(localStorage.getItem(url));
 			if ( stored ) {
-				var validCache = (new Date().getTime() - stored.timestamp) < cacheTimeMs;
+				var validCache = (new Date().getTime() - stored.timestamp) < cacheInvalidMs;
 				if ( validCache ) {
 					console.log('%c' + url + ' (localStorange)', 'color: blue');
-					return $.Deferred().resolve(stored.data).promise()
+					var dfd = $.Deferred();
+					if ( cacheDelayMs > 0 ){
+						setTimeout(function() { dfd.resolve(stored.data); }, cacheDelayMs );
+					} else {
+						dfd.resolve(stored.data);
+					}
+					return dfd.promise()
 				}
 			}
 			return getJSON(url);
@@ -146,7 +155,7 @@ $( document ).ready(function() {
 
 	function getWikiSentence(page_title){
 		var query_url = wikiApiUrl(page_title);
-		$.getCachedJSON( query_url )
+		$.getCachedJSON( query_url, 100 )
 			.done(function(data){
 				if ( isRepetition(data.parse.pageid) ) { return }
 				var html = cleanWikiHTML(data.parse.text["*"]);
