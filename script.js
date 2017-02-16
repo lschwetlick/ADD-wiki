@@ -23,6 +23,22 @@ jQuery.extend({
 					// when localStorage quota is exceeded
 					// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
 					console.log('%c' + e.message, 'color: red');
+					// Remove oldest entries to make space
+					// Adapted from http://codereview.stackexchange.com/questions/38441
+					// Store timestamps into an object with original key as value
+					var expiries = Object.keys(localStorage).reduce(function(collection,key){
+						var t = JSON.parse(localStorage.getItem(key)).timestamp;
+						collection[t] = key;
+						return collection;
+					},{});
+					var timestamps = Object.keys(expiries);
+					console.log('%c' + timestamps, 'color: red');
+					// Find the 5 oldest entries (smallest timestamp) and destroy them
+					for(var i = 0; i < 5; i++){
+						var oldest = Math.min.apply(null,timestamps);
+						localStorage.removeItem(expiries[oldest]);
+					}
+					localStorage.setItem(url, JSON.stringify(cache));
 				}
 			});
 			console.log('%c' + url + ' (AJAX)', 'color: orange');
