@@ -16,7 +16,14 @@ jQuery.extend({
 			var promise = $.getJSON(url);
 			promise.done(function(data) {
 				var cache = {data: data, timestamp: new Date().getTime()};
-				localStorage.setItem(url, JSON.stringify(cache));
+				try {
+					localStorage.setItem(url, JSON.stringify(cache));
+				} catch (e) {
+					// Different browsers return different error codes
+					// when localStorage quota is exceeded
+					// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
+					console.log('%c' + e.message, 'color: red');
+				}
 			});
 			console.log('%c' + url + ' (AJAX)', 'color: orange');
 			return promise;
