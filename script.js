@@ -15,7 +15,7 @@ jQuery.extend({
 		function getJSON(url) {
 			var promise = $.getJSON(url);
 			promise.done(function(data) {
-				var cache = {data: data, timestamp: new Date().getTime()};
+				var cache = {data: data, timestamp: Date.now()};
 				try {
 					localStorage.setItem(url, JSON.stringify(cache));
 				} catch (e) {
@@ -32,7 +32,7 @@ jQuery.extend({
 		function getCache(url) {
 			var stored = JSON.parse(localStorage.getItem(url));
 			if ( stored ) {
-				var validCache = (new Date().getTime() - stored.timestamp) < cacheInvalidMs;
+				var validCache = (Date.now() - stored.timestamp) < cacheInvalidMs;
 				if ( validCache ) {
 					console.log('%c' + url + ' (localStorange)', 'color: blue');
 					var dfd = $.Deferred();
