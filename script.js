@@ -59,24 +59,21 @@ $( document ).ready(function() {
 
 	/* Returns a text up to a sentence that ends with an <a> tag */
 	function parseForSentence(html_string) {
-		var divider = '</a>.';
-		split = html_string.split(divider);
-		if ( split.length == 1 ) {
-			divider = '</a>).';
-			split = html_string.split(divider);
-			if ( split.length == 1 ) {
-				divider = '</a>;';
-				split = html_string.split(divider);
-				if ( split.length == 1 ) {
-					console.log('No link at the end of a sentence found.')
-					// false: No next wiki page available
-					return [split[0], false];
-				}
+		var dividers = ['.', ').', ';', ');']
+		// Old fashioned iteration. [].forEach does not support breaking 
+		// out of the loop, see
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+		for(var i = 0; i < dividers.length; i++) {
+			var divider = '</a>' + dividers[i];
+			var split = html_string.split(divider);
+			if ( split.length > 1 ) {
+				//TODO make "ADD-level" configurable, e.g. use last possible link
+				// true: Continue, sentence has a link at the end
+				return [split[0] + divider, true]
 			}
 		}
-		//TODO make "ADD-level" configurable, e.g. use last possible link
-		// true: Continue, sentence has a link at the end
-		return [split[0] + divider, true];
+		// false: No link could be found. No next wiki page available
+		return [html_string, false]
 	}
 
 	/* Return the name of the page linked to from the last <a> tag */
