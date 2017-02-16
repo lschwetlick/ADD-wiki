@@ -7,3 +7,7 @@ body {
 	text-align: justify;
 	display: inline-block;
 }
+
+.visualhide {
+	display: none;
+}
