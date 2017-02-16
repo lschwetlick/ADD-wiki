@@ -117,15 +117,17 @@ $( document ).ready(function() {
 	/* Return HTML without elements that should not be rendered */
 	function cleanWikiHTML(html_string) {
 		temp_dom = parseToDOM(html_string);
-		temp_dom = temp_dom.children('p');
+		temp_dom = temp_dom.children('p, ul, ol');
 		// Remove References of the form '[1]''
 		temp_dom.children('sup').remove();
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
 		// Remove links to pronunciation audio
 		temp_dom.find('span.noexcerpt').remove();
+		// Remove cite error that API returns
+		temp_dom.find('span.mw-ext-cite-error').remove();
 		var html = '';
-		temp_dom.each(function() { html += $(this).html() + ' '; });
+		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
 		return html
 	}
 
@@ -151,7 +153,7 @@ $( document ).ready(function() {
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
 		//TODO use first link and cut of the sentence to make it properly ADD.
-		var last_a = sentence_dom.children('a:last');
+		var last_a = sentence_dom.find('a:last');
 		var next_entry = last_a.attr('href').split('/wiki/')[1];
 		console.log('Next: ', last_a.attr('title'));
 		return next_entry
