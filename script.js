@@ -59,7 +59,7 @@ $( document ).ready(function() {
 
 	/* Returns a text up to a sentence that ends with an <a> tag */
 	function parseForSentence(html_string) {
-		var dividers = ['.', ').', ';', ');']
+		var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?'];
 		// Old fashioned iteration. [].forEach does not support breaking 
 		// out of the loop, see
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
