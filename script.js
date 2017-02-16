@@ -10,6 +10,23 @@ JQuery extension, returns a promise.
 //Adapted from https://gist.github.com/contolini/6115380
 jQuery.extend({
 	getCachedJSON: function(url, cacheDelayMs = 0, cacheInvalidMs = 86400000) {
+		// Remove oldest entries to make space
+		// Adapted from http://codereview.stackexchange.com/questions/38441
+		function removeOldestLSEntries(n) {
+			// Store timestamps into an object with original key as value
+			var expiries = Object.keys(localStorage).reduce(function(collection,key){
+				var t = JSON.parse(localStorage.getItem(key)).timestamp;
+				collection[t] = key;
+				return collection;
+			},{});
+			var timestamps = Object.keys(expiries);
+			// Find the 5 oldest entries (smallest timestamp) and remove them
+			for(var i = 0; i < n; i++){
+				var oldest = Math.min.apply(null,timestamps);
+				localStorage.removeItem(expiries[oldest]);
+			}
+		}
+
 		var supportsLocalStorage = 'localStorage' in window;
 		// Both functions 'getJSON' and 'getCache' return a promise
 		function getJSON(url) {
@@ -23,21 +40,7 @@ jQuery.extend({
 					// when localStorage quota is exceeded
 					// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
 					console.log('%c' + e.message, 'color: red');
-					// Remove oldest entries to make space
-					// Adapted from http://codereview.stackexchange.com/questions/38441
-					// Store timestamps into an object with original key as value
-					var expiries = Object.keys(localStorage).reduce(function(collection,key){
-						var t = JSON.parse(localStorage.getItem(key)).timestamp;
-						collection[t] = key;
-						return collection;
-					},{});
-					var timestamps = Object.keys(expiries);
-					console.log('%c' + timestamps, 'color: red');
-					// Find the 5 oldest entries (smallest timestamp) and destroy them
-					for(var i = 0; i < 5; i++){
-						var oldest = Math.min.apply(null,timestamps);
-						localStorage.removeItem(expiries[oldest]);
-					}
+					removeOldestLSEntries(5);
 					localStorage.setItem(url, JSON.stringify(cache));
 				}
 			});
