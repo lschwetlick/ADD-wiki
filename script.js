@@ -95,8 +95,7 @@ $( document ).ready(function() {
 			// Prevent double encode, page is already urlencoded
 			page: decodeURI(page),
 			redirects: 1,
-			prop: "text",
-			section: 0,
+			prop: "text|categories",
 			disablelimitreport: 1,
 			disableeditsection: 1,
 			disabletoc: 1,
@@ -117,7 +116,8 @@ $( document ).ready(function() {
 	/* Return HTML without elements that should not be rendered */
 	function cleanWikiHTML(html_string) {
 		temp_dom = parseToDOM(html_string);
-		temp_dom = temp_dom.children('p, ul, ol');
+		//TODO this breaks on "Magic"
+		temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
 		// Remove References of the form '[1]''
 		temp_dom.children('sup').remove();
 		// The box showing coordinates is part of the main html
@@ -181,19 +181,39 @@ $( document ).ready(function() {
 		return false
 	}
 
+	function getFirstHref(html_string) {
+		var dom = parseToDOM(cleanWikiHTML(html_string));
+		var first_a = dom.find('a:first');
+		var next_entry = first_a.attr('href').split('/wiki/')[1];
+		console.log('Next: ', first_a.attr('title'));
+		// Disambiguation pages always have links
+		return [next_entry, true]
+	}
+
 	function getWikiSentence(page_title){
 		var query_url = wikiApiUrl(page_title);
 		$.getCachedJSON( query_url, 100 )
 			.done(function(data){
-				if ( isRepetition(data.parse.pageid) ) { return }
-				var html = cleanWikiHTML(data.parse.text["*"]);
-				var [sentence, next_entry_available] = parseForSentence(html);
-				var sentence_dom = parseToDOM(sentence);
-				// TODO checkbox for include_markup
-				appendSentences(sentence_dom, true);
+				var text = data.parse.text["*"];
+				var categories = data.parse.categories;
+				var pageid = data.parse.pageid;
+				if ( isRepetition(pageid) ) { return }
+				var isDis = categories.some(function(e){
+					return e["*"].toLowerCase().indexOf('disambiguation') > -1 
+				});
+				if ( isDis ) {
+					var [next_page, next_entry_available] = getFirstHref(text);
+				} else {
+					var html = cleanWikiHTML(text);
+					//TODO Do not return next_entry_available here, make getNextEntryName check
+					var [sentence, next_entry_available] = parseForSentence(html);
+					var sentence_dom = parseToDOM(sentence);
+					var next_page = getNextEntryName(sentence_dom);
+					// TODO checkbox for include_markup
+					appendSentences(sentence_dom, true);
+				}
 				if ( !next_entry_available ) { return }
-				var next_entry = getNextEntryName(sentence_dom);
-				getWikiSentence(next_entry);
+				getWikiSentence(next_page);
 			})
 			.fail(function() { console.log("Error: ", query_url); });
 	}
