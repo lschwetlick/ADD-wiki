@@ -1,3 +1,5 @@
+var out;
+
 /*
 Return JSON from url, use browser's localStorage as cache
 JQuery extension, returns a promise.
@@ -66,7 +68,8 @@ jQuery.extend({
 			return getJSON(url);
 		}
 
-		return supportsLocalStorage ? getCache( url ) : getJSON( url );
+		//return supportsLocalStorage ? getCache( url ) : getJSON( url );
+		return getJSON( url );
 	}
 });
 
@@ -87,7 +90,7 @@ $( document ).ready(function() {
 	});
 
 	/* Returns the query URL for the Wikipedia API of a given page */
-	function wikiApiUrl(page) {
+	function wikiApiFirstSectionUrl(page) {
 		var wiki_api_base = "https://en.wikipedia.org/w/api.php?"
 		params = {
 			action: "parse",
@@ -95,7 +98,30 @@ $( document ).ready(function() {
 			// Prevent double encode, page is already urlencoded
 			page: decodeURI(page),
 			redirects: 1,
-			prop: "text|categories",
+			prop: "text",
+			section: 0,
+			disablelimitreport: 1,
+			disableeditsection: 1,
+			disabletoc: 1,
+			noimages: 1
+		}
+		/* "callback=?" makes jquery pick a custom name for the callback.
+		JQuery then knows to set the datatype to JSONP.
+		The server wraps the requested JSON in a function call with the callback's name.*/
+		return wiki_api_base + $.param(params) + "&callback=?";
+	}
+
+	//TODO deduplicate
+	/* Returns the query URL for the Wikipedia API of a given page's categories */
+	function wikiApiCategoriesUrl(page) {
+		var wiki_api_base = "https://en.wikipedia.org/w/api.php?"
+		params = {
+			action: "parse",
+			format: "json",
+			// Prevent double encode, page is already urlencoded
+			page: decodeURI(page),
+			redirects: 1,
+			prop: "categories",
 			disablelimitreport: 1,
 			disableeditsection: 1,
 			disabletoc: 1,
@@ -117,9 +143,12 @@ $( document ).ready(function() {
 	function cleanWikiHTML(html_string) {
 		temp_dom = parseToDOM(html_string);
 		//TODO this breaks on "Magic"
-		temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
+		//temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
+		temp_dom = temp_dom.children('p, ul, ol:not(.references)');
 		// Remove References of the form '[1]''
 		temp_dom.children('sup').remove();
+		// Remove citations
+		temp_dom.children('.references').remove();
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
 		// Remove links to pronunciation audio
@@ -146,6 +175,7 @@ $( document ).ready(function() {
 				return [split[0] + divider, true]
 			}
 		}
+		console.log('No next wiki page');
 		// false: No link could be found. No next wiki page available
 		return [html_string, false]
 	}
@@ -186,36 +216,45 @@ $( document ).ready(function() {
 		var first_a = dom.find('a:first');
 		var next_entry = first_a.attr('href').split('/wiki/')[1];
 		console.log('Next: ', first_a.attr('title'));
-		// Disambiguation pages always have links
-		return [next_entry, true]
+		return next_entry
 	}
 
 	function getWikiSentence(page_title){
-		var query_url = wikiApiUrl(page_title);
-		$.getCachedJSON( query_url, 100 )
-			.done(function(data){
-				var text = data.parse.text["*"];
-				var categories = data.parse.categories;
-				var pageid = data.parse.pageid;
-				if ( isRepetition(pageid) ) { return }
-				var isDis = categories.some(function(e){
-					return e["*"].toLowerCase().indexOf('disambiguation') > -1 
-				});
-				if ( isDis ) {
-					var [next_page, next_entry_available] = getFirstHref(text);
-				} else {
-					var html = cleanWikiHTML(text);
-					//TODO Do not return next_entry_available here, make getNextEntryName check
-					var [sentence, next_entry_available] = parseForSentence(html);
-					var sentence_dom = parseToDOM(sentence);
-					var next_page = getNextEntryName(sentence_dom);
-					// TODO checkbox for include_markup
-					appendSentences(sentence_dom, true);
-				}
+		var cat_query_url = wikiApiCategoriesUrl(page_title);
+		var cat_query = $.getCachedJSON( cat_query_url, 100 );
+		cat_query.fail(function() { console.log("Error: ", cat_query_url); });
+		var text_query_url = wikiApiFirstSectionUrl(page_title);
+		var text_query = $.getCachedJSON( text_query_url, 100 );
+		text_query.fail(function() { console.log("Error: ", text_query_url); });
+		
+		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
+			//var [cat_data, cat_status, cat_jqXHR] = cat_resp;
+			var cat_data = cat_resp[0];
+			//var [text_data, text_status, text_jqXHR] = text_resp;
+			var text_data = text_resp[0];
+			var pageid = cat_data.parse.pageid;
+			var section_text = text_data.parse.text["*"];
+			console.assert(pageid == text_data.parse.pageid, pageid, text_data.parse.pageid);
+			if ( isRepetition(pageid) ) { return }
+			var categories = cat_data.parse.categories;
+			var isDis = categories.some(function(e){
+				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
+			});
+			if ( isDis ) {
+				console.log('Disambiguation page found: ', cat_data.parse.title);
+				getWikiSentence(getFirstHref(section_text));
+			} else {
+				var html = cleanWikiHTML(section_text);
+				//TODO Do not return next_entry_available here, make getNextEntryName check
+				var [sentence, next_entry_available] = parseForSentence(html);
+				var sentence_dom = parseToDOM(sentence);
+				// TODO checkbox for include_markup
+				appendSentences(sentence_dom, true);
 				if ( !next_entry_available ) { return }
+				var next_page = getNextEntryName(sentence_dom);
 				getWikiSentence(next_page);
-			})
-			.fail(function() { console.log("Error: ", query_url); });
-	}
-});
+			}
+		}); //done
+	} //getWikiSentence
+}); //document.ready
 
