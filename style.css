@@ -6,8 +6,25 @@ body {
 	width: 800px;
 	text-align: justify;
 	display: inline-block;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .visualhide {
 	display: none;
+}
+#settings-div{
+	width: 30%;
+	margin: auto;
+	height: 80px;
+}
+
+
+#text-input-div{
+	float: left;
+	margin-top: 35px;
+}
+
+#level-div{
+	float: right;
 }

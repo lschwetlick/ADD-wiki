@@ -11,14 +11,23 @@
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 	<script src="script.js"></script>
 	<link rel="stylesheet" type="text/css" href="style.css">
-	<base href="https://en.wikipedia.org">
 </head>
 
 <body>
 	<h1>ADD wiki</h1>
-	<form id="wiki" action="#">
-		<input type="text" value="New York City"><input type="submit" value="Submit">
-	</form>
+	<div id="settings-div">
+		<form id="wiki" action="#">
+			<div id="text-input-div">
+				<input type="text" value="New York City"><input type="submit" value="Submit">
+			</div>
+			<div id="level-div">
+				<p> ADD level</p>
+				<input type="range" id="myRange" name="slideInput" value="3" min="1" max="3" step="1" oninput="slideOutput.value = slideInput.value"><output name="slideOutput" id="slideOutput">3</output>
+			</div>
+		</form>
+
+	</div>
+
 	<div id="articles"></div>
 </body>
 

@@ -72,7 +72,7 @@ jQuery.extend({
 		return getJSON( url );
 	}
 });
-
+var ADD_LEVEL=3;
 $( document ).ready(function() {
 	var $form = $("form#wiki");
 	var $output = $('#articles');
@@ -83,7 +83,9 @@ $( document ).ready(function() {
 	$form.submit(function( event ) {
 		event.preventDefault();
 		var start_article = $(this).find("input[type=text]").val();
+		ADD_LEVEL = $(this).find("input[type=range]").val()
 		console.log( "Start: ", start_article );
+		console.log("ADD level", ADD_LEVEL)
 		pageids = [];
 		$output.empty();
 		getWikiSentence(start_article);
@@ -146,9 +148,13 @@ $( document ).ready(function() {
 		//temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
 		temp_dom = temp_dom.children('p, ul, ol:not(.references)');
 		// Remove References of the form '[1]''
-		temp_dom.children('sup').remove();
+		// temp_dom.children('sup').remove();
+		temp_dom.find('sup').remove();
 		// Remove citations
 		temp_dom.children('.references').remove();
+		// temp_dom.find('.references').remove();
+
+		temp_dom.find('span.reference-text').remove(); // I am trying to get rid of references that did not get removed in the children -> references. Sometimes the wiki is badly formatted like "Eastern Mediterranean"
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
 		// Remove links to pronunciation audio
@@ -162,23 +168,68 @@ $( document ).ready(function() {
 
 	/* Returns a text up to a sentence that ends with an <a> tag */
 	function parseForSentence(html_string) {
-		var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?'];
-		// Old fashioned iteration. [].forEach does not support breaking 
-		// out of the loop, see
-		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
-		for(var i = 0; i < dividers.length; i++) {
-			var divider = '</a>' + dividers[i];
-			var split = html_string.split(divider);
-			if ( split.length > 1 ) {
-				//TODO make "ADD-level" configurable, e.g. use last possible link
-				// true: Continue, sentence has a link at the end
-				return [split[0] + divider, true]
+		// ADD_LEVEL = 3;
+
+		if (ADD_LEVEL==1){
+        	var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
+			// Old fashioned iteration. [].forEach does not support breaking 
+			// out of the loop, see
+			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+			for(var i = 0; i < dividers.length; i++) {
+				var divider = '</a>' + dividers[i];
+				var split = html_string.split(divider);	
+				console.log(split)
+				if ( split.length > 1 ) {
+					//TODO make "ADD-level" configurable, e.g. use last possible link
+					// true: Continue, sentence has a link at the end
+					return [split[0] + divider, true]
+				}
 			}
 		}
+		else if (ADD_LEVEL==3){
+			
+			var divider = '</a>'
+			var split = html_string.split(divider);
+			if ( split.length > 1 ) {
+				return [split[0] + divider + '&mdash;', true]
+			}
+			
+		}
+		else if (ADD_LEVEL==2){
+			var first_divider = '</b>';
+			var i = html_string.indexOf(first_divider) + first_divider.length;
+			var constant_part = html_string.substring(0, i); 
+			var split_part = html_string.substring(i, html_string.length);
+			console.log(split_part);
+			var divider = '</a>'
+			var split = split_part.split(divider);
+			if ( split.length > 1 ) {
+				return [constant_part + split[0] + divider + '&mdash;', true]
+			}
+			
+		}
 		console.log('No next wiki page');
-		// false: No link could be found. No next wiki page available
-		return [html_string, false]
-	}
+	// 	false: No link could be found. No next wiki page available
+		return [html_string, false]     	
+	} 
+	// 	var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
+	// 	// Old fashioned iteration. [].forEach does not support breaking 
+	// 	// out of the loop, see
+	// 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+	// 	for(var i = 0; i < dividers.length; i++) {
+	// 		var divider = '</a>' + dividers[i];
+	// 		var split = html_string.split(divider);	
+	// 		console.log(split)
+	// 		if ( split.length > 1 ) {
+	// 			//TODO make "ADD-level" configurable, e.g. use last possible link
+	// 			// true: Continue, sentence has a link at the end
+	// 			return [split[0] + divider, true]
+	// 		}
+	// 	}
+	// 	console.log('No next wiki page');
+	// 	// false: No link could be found. No next wiki page available
+	// 	return [html_string, false]
+	// }
 
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
@@ -245,6 +296,7 @@ $( document ).ready(function() {
 				getWikiSentence(getFirstHref(section_text));
 			} else {
 				var html = cleanWikiHTML(section_text);
+				console.log(html);
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
