@@ -309,4 +309,3 @@ $( document ).ready(function() {
 		}); //done
 	} //getWikiSentence
 }); //document.ready
-

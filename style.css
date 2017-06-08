@@ -13,18 +13,109 @@ body {
 .visualhide {
 	display: none;
 }
-#settings-div{
-	width: 30%;
-	margin: auto;
-	height: 80px;
+
+#submit-btn {
+	background-color: #36c;
+	border-color: #36c;
+	border: 1px solid #36c;
+}
+
+#submit-btn:hover {
+	background-color: #447ff5;
+	border-color: #447ff5;
+}
+
+#submit-btn:active {
+	background-color: #2a4b8d;
+	border-color: #2a4b8d;
+}
+
+input[type=search]:focus {
+	outline: 0;
+	border-color: #36c !important;
+	box-shadow: inset 0 0 0 1px #36c;
 }
 
 
-#text-input-div{
-	float: left;
-	margin-top: 35px;
+
+
+.range-slider__value {
+  box-sizing: border-box;
 }
 
-#level-div{
-	float: right;
+.range-slider__range {
+  -webkit-appearance: none;
+  height: 10px;
+	width: 220px;
+  border-radius: 5px;
+  background: #d7dcdf;
+  outline: none;
+}
+.range-slider__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+          appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #36c;
+  cursor: pointer;
+  -webkit-transition: background .15s ease-in-out;
+  transition: background .15s ease-in-out;
+}
+.range-slider__range::-webkit-slider-thumb:hover {
+  background: #447ff5;
+}
+.range-slider__range:active::-webkit-slider-thumb {
+  background: #447ff5;
+}
+.range-slider__range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: #447ff5;
+  cursor: pointer;
+  -webkit-transition: background .15s ease-in-out;
+  transition: background .15s ease-in-out;
+}
+.range-slider__range::-moz-range-thumb:hover {
+  background: #447ff5;
+}
+.range-slider__range:active::-moz-range-thumb {
+  background: #447ff5;
+}
+
+.range-slider__value {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  color: #000;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 3px;
+  background: #d7dcdf;
+  padding: 5px 10px;
+  margin-left: 8px;
+	font-family: sans-serif;
+}
+.range-slider__value:after {
+  position: absolute;
+  top: 8px;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-right: 7px solid #d7dcdf;
+  border-bottom: 7px solid transparent;
+  content: '';
+}
+
+::-moz-range-track {
+  background: #d7dcdf;
+  border: 0;
+}
+
+input::-moz-focus-inner,
+input::-moz-focus-outer {
+  border: 0;
 }

@@ -14,18 +14,25 @@
 </head>
 
 <body>
-	<h1>ADD wiki</h1>
-	<div id="settings-div">
-		<form id="wiki" action="#">
-			<div id="text-input-div">
-				<input type="text" value="New York City"><input type="submit" value="Submit">
-			</div>
-			<div id="level-div">
-				<p> ADD level</p>
-				<input type="range" id="myRange" name="slideInput" value="3" min="1" max="3" step="1" oninput="slideOutput.value = slideInput.value"><output name="slideOutput" id="slideOutput">3</output>
-			</div>
-		</form>
-
+	<div id="main" style="margin-top: 50px;">
+		<h1 style="font-weight: initial; text-transform: uppercase;"><span style="font-size: 1.3em;">A</span>DD <span style="font-size: 1.3em;">W</span>ikipedi<span style="font-size: 1.3em;">a</span></h1>
+		<img src="img/wiki_path.png" alt="Wikipedia logo" style="width: 200px; margin-top: 30px;">
+		<div id="settings-div">
+			<form id="wiki" action="#">
+				<div id="text-input-div" style="margin-top: 30px;">
+					<input type="search" value="New York City" autocomplete="off" style="border: 1px solid #a2a9b1; border-radius: 2px; height: 2.6rem; line-height: 1.3; font-size: 1.1rem; padding: 8px; width: 250px;">
+					<button type="submit" id="submit-btn" style="color: #fff; font-size: 1.1rem; line-height: 1.3; border-radius: 2px; vertical-align:top; height: 2.6rem; width: 3.2rem; margin-left: 8px;">
+						<i style="background-image: url(img/sprite-icons.png); background-position: 0 -35px; width: 20px; height: 20px; display: inline-block; vertical-align: middle;"></i>
+					</button>
+				</div>
+				<div id="level-div" style="margin-top: 20px;">
+					<div class="range-slider">
+						<input class="range-slider__range" type="range" name="slideInput" value="1" min="1" max="3" step="1" oninput="slideOutput.value = slideInput.value">
+						<output class="range-slider__value">level: <output name="slideOutput">1</output></span>
+					</div> 
+				</div>
+			</form>
+		</div> <!-- settings-div -->
 	</div>
 
 	<div id="articles"></div>
