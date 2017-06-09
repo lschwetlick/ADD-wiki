@@ -1,10 +1,7 @@
-var out;
-
-var ADD_LEVEL=3;
 $( document ).ready(function() {
 	var $form = $("form#wiki");
 	var $output = $('#articles');
-	var $outputElement = $('<p>');
+	var $outputElement = $('#articles');
 	var pageids = [];
 
 	/* Setup button handler */
