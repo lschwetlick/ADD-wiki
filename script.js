@@ -1,15 +1,18 @@
 $( document ).ready(function() {
 	var $output = $('#articles');
-	var $outputElement = $('#articles');
+	var $outputElement = $('<p>');
 	var pageids = [];
+	var add_level;
 
 	/* Setup button handler */
 	$("form#wiki").submit(function( event ) {
 		event.preventDefault();
+		$('#submit-btn').prop('disabled', true);
 		var start_article = $(this).find("input[type=search]").val();
-		ADD_LEVEL = $(this).find("input[type=range]").val()
+		add_level = $(this).find("input[type=range]").val()
 		console.log("Start: ", start_article);
-		console.log("ADD level", ADD_LEVEL)
+		console.log("ADD level", add_level)
+		setProgress(start_article);
 		// Reset
 		pageids = [];
 		$output.empty();
@@ -102,10 +105,8 @@ $( document ).ready(function() {
 
 	/* Returns a text up to a sentence that ends with an <a> tag */
 	function parseForSentence(html_string) {
-		// ADD_LEVEL = 3;
-
-		if (ADD_LEVEL==1){
-        	var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
+		if (add_level == 1){
+			var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
 			// Old fashioned iteration. [].forEach does not support breaking 
 			// out of the loop, see
 			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
@@ -119,16 +120,14 @@ $( document ).ready(function() {
 				}
 			}
 		}
-		else if (ADD_LEVEL==3){
-			
+		else if (add_level == 3){
 			var divider = '</a>'
 			var split = html_string.split(divider);
 			if ( split.length > 1 ) {
 				return [split[0] + divider + '&mdash;', true]
 			}
-			
 		}
-		else if (ADD_LEVEL==2){
+		else if (add_level == 2){
 			var first_divider = '</b>';
 			var i = html_string.indexOf(first_divider) + first_divider.length;
 			var constant_part = html_string.substring(0, i); 
@@ -142,34 +141,18 @@ $( document ).ready(function() {
 			
 		}
 		console.log('No next wiki page');
-	// 	false: No link could be found. No next wiki page available
+		// false: No link could be found. No next wiki page available
 		return [html_string, false]     	
 	} 
-	// 	var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
-	// 	// Old fashioned iteration. [].forEach does not support breaking 
-	// 	// out of the loop, see
-	// 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
-	// 	for(var i = 0; i < dividers.length; i++) {
-	// 		var divider = '</a>' + dividers[i];
-	// 		var split = html_string.split(divider);	
-	// 		console.log(split)
-	// 		if ( split.length > 1 ) {
-	// 			//TODO make "ADD-level" configurable, e.g. use last possible link
-	// 			// true: Continue, sentence has a link at the end
-	// 			return [split[0] + divider, true]
-	// 		}
-	// 	}
-	// 	console.log('No next wiki page');
-	// 	// false: No link could be found. No next wiki page available
-	// 	return [html_string, false]
-	// }
 
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
 		//TODO use first link and cut of the sentence to make it properly ADD.
 		var last_a = sentence_dom.find('a:last');
 		var next_entry = last_a.attr('href').split('/wiki/')[1];
-		console.log('Next: ', last_a.attr('title'));
+		var title = last_a.attr('title');
+		console.log('Next: ', title);
+		setProgress(title);
 		return next_entry
 	}
 
@@ -183,6 +166,11 @@ $( document ).ready(function() {
 		$output.append(
 			$outputElement.clone().html(sentence)
 		);
+	}
+
+	function setProgress(title, done) {
+		var text = done ? 'Done!' : 'Looking up \'' + title + '\'...';
+		$('#progress').text(text);
 	}
 
 	/* Return whether the id was already queried, also stores passed ids */
@@ -203,6 +191,12 @@ $( document ).ready(function() {
 		return next_entry
 	}
 
+	// Cleanup after one query is finished
+	function done() {
+		$('#submit-btn').prop('disabled', false);
+		setProgress('', true);
+	}
+
 	function getWikiSentence(page_title){
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
 		var cat_query = $.getCachedJSON( cat_query_url, 100 );
@@ -219,7 +213,7 @@ $( document ).ready(function() {
 			var pageid = cat_data.parse.pageid;
 			var section_text = text_data.parse.text["*"];
 			console.assert(pageid == text_data.parse.pageid, pageid, text_data.parse.pageid);
-			if ( isRepetition(pageid) ) { return }
+			if ( isRepetition(pageid) ) { done(); return }
 			var categories = cat_data.parse.categories;
 			var isDis = categories.some(function(e){
 				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
@@ -234,7 +228,7 @@ $( document ).ready(function() {
 				var sentence_dom = parseToDOM(sentence);
 				// TODO checkbox for include_markup
 				appendSentences(sentence_dom, true);
-				if ( !next_entry_available ) { return }
+				if ( !next_entry_available ) { done(); return }
 				var next_page = getNextEntryName(sentence_dom);
 				getWikiSentence(next_page);
 			}
