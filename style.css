@@ -56,6 +56,10 @@ i#submit-btn-icon {
   background-size: 20px 20px;
 }
 
+#by a, by a:visited {
+  color: #717171;
+}
+
 .range-slider__value {
   box-sizing: border-box;
 }
