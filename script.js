@@ -1,18 +1,19 @@
 $( document ).ready(function() {
-	var $form = $("form#wiki");
 	var $output = $('#articles');
 	var $outputElement = $('#articles');
 	var pageids = [];
 
 	/* Setup button handler */
-	$form.submit(function( event ) {
+	$("form#wiki").submit(function( event ) {
 		event.preventDefault();
-		var start_article = $(this).find("input[type=text]").val();
+		var start_article = $(this).find("input[type=search]").val();
 		ADD_LEVEL = $(this).find("input[type=range]").val()
-		console.log( "Start: ", start_article );
+		console.log("Start: ", start_article);
 		console.log("ADD level", ADD_LEVEL)
+		// Reset
 		pageids = [];
 		$output.empty();
+		// Start
 		getWikiSentence(start_article);
 	});
 
@@ -27,7 +28,6 @@ $( document ).ready(function() {
 			redirects: 1,
 			prop: "text",
 			section: 0,
-			disablelimitreport: 1,
 			disableeditsection: 1,
 			disabletoc: 1,
 			noimages: 1
@@ -49,7 +49,7 @@ $( document ).ready(function() {
 			page: decodeURI(page),
 			redirects: 1,
 			prop: "categories",
-			disablelimitreport: 1,
+			//disablelimitreport: 1, //increases response times drastically
 			disableeditsection: 1,
 			disabletoc: 1,
 			noimages: 1
@@ -71,23 +71,32 @@ $( document ).ready(function() {
 		temp_dom = parseToDOM(html_string);
 		//TODO this breaks on "Magic"
 		//temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
-		temp_dom = temp_dom.children('p, ul, ol:not(.references)');
+		// The response comes wrapped in a 'mw-parser-output' div...
+		temp_dom = temp_dom.children('div.mw-parser-output').children('p, ul, ol:not(.references)');
+
 		// Remove References of the form '[1]''
 		// temp_dom.children('sup').remove();
 		temp_dom.find('sup').remove();
 		// Remove citations
 		temp_dom.children('.references').remove();
 		// temp_dom.find('.references').remove();
-
-		temp_dom.find('span.reference-text').remove(); // I am trying to get rid of references that did not get removed in the children -> references. Sometimes the wiki is badly formatted like "Eastern Mediterranean"
+		
+		// Trying to get rid of references that did not get removed in the children -> references.
+		// Sometimes the wiki is badly formatted like "Eastern Mediterranean"
+		temp_dom.find('span.reference-text').remove(); 
 		// The box showing coordinates is part of the main html
 		temp_dom.find('span#coordinates').remove();
 		// Remove links to pronunciation audio
 		temp_dom.find('span.noexcerpt').remove();
 		// Remove cite error that API returns
 		temp_dom.find('span.mw-ext-cite-error').remove();
+		// Remove images
+		temp_dom.find('img').remove();
+		// Remove audiolink help
+		temp_dom.find('small.metadata').remove();
 		var html = '';
 		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
+		console.log('Cleaned HTMl length:', html.length);
 		return html
 	}
 
@@ -103,7 +112,6 @@ $( document ).ready(function() {
 			for(var i = 0; i < dividers.length; i++) {
 				var divider = '</a>' + dividers[i];
 				var split = html_string.split(divider);	
-				console.log(split)
 				if ( split.length > 1 ) {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
@@ -221,7 +229,6 @@ $( document ).ready(function() {
 				getWikiSentence(getFirstHref(section_text));
 			} else {
 				var html = cleanWikiHTML(section_text);
-				console.log(html);
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
