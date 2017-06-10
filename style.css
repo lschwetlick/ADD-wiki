@@ -56,6 +56,12 @@ i#submit-btn-icon {
   background-size: 20px 20px;
 }
 
+
+#submit-btn:disabled {
+  background-color: #d7dcdf;
+  border-color: #d7dcdf;
+}
+
 #by a, by a:visited {
   color: #717171;
 }
