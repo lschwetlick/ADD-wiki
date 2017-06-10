@@ -17,8 +17,25 @@ $( document ).ready(function() {
 		pageids = [];
 		$output.empty();
 		// Start
+		minifyUI();
 		getWikiSentence(start_article);
 	});
+
+	function minifyUI() {
+		$('#header-container').animate({
+			marginLeft: "20px",
+			marginTop: "20px"
+		});
+		$('#logo-container').animate({
+			width: "3em",
+			marginLeft: "20px",
+			marginTop: "10px"
+		});
+		$('#settings-div').animate({
+			marginTop: '-140px',
+			paddingBottom: '20px'
+		});
+	}
 
 	/* Returns the query URL for the Wikipedia API of a given page */
 	function wikiApiFirstSectionUrl(page) {
