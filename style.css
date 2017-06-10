@@ -1,6 +1,7 @@
 body {
 	text-align: center;
   font-family: sans-serif;
+  margin: 0;
 }
 
 #articles {
@@ -73,9 +74,9 @@ i#submit-btn-icon {
 .range-slider__range {
   -webkit-appearance: none;
   height: 10px;
-	width: 220px;
+  width: 220px;
   border-radius: 5px;
-  background: #d7dcdf;
+  background: #ffffff;
   outline: none;
 }
 .range-slider__range::-webkit-slider-thumb {
@@ -120,7 +121,7 @@ i#submit-btn-icon {
   line-height: 20px;
   text-align: center;
   border-radius: 3px;
-  background: #d7dcdf;
+  background: #ffffff;
   padding: 5px 10px;
   margin-left: 8px;
 }
@@ -131,13 +132,13 @@ i#submit-btn-icon {
   width: 0;
   height: 0;
   border-top: 7px solid transparent;
-  border-right: 7px solid #d7dcdf;
+  border-right: 7px solid #ffffff;
   border-bottom: 7px solid transparent;
   content: '';
 }
 
 ::-moz-range-track {
-  background: #d7dcdf;
+  background: #ffffff;
   border: 0;
 }
 
