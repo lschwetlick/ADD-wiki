@@ -5,7 +5,7 @@ body {
 }
 
 #articles {
-	max-width: 800px;
+	max-width: 750px;
 	text-align: justify;
 	display: inline-block;
 	margin-left: auto;
@@ -57,7 +57,6 @@ i#submit-btn-icon {
   background-size: 20px 20px;
 }
 
-
 #submit-btn:disabled {
   background-color: #d7dcdf;
   border-color: #d7dcdf;
@@ -65,6 +64,13 @@ i#submit-btn-icon {
 
 #by a, by a:visited {
   color: #717171;
+}
+
+@media screen and (min-width: 0px) and (max-width: 1265px) {
+  #by { display: none; }  /* Hide on small screens */
+}
+@media screen and (min-width: 1266px) {
+  #my-content { display: block; }   /* show it otherwise */
 }
 
 .range-slider__value {
