@@ -170,7 +170,7 @@ $( document ).ready(function() {
 		var last_a = sentence_dom.find('a:last');
 		var next_entry = last_a.attr('href').split('/wiki/')[1];
 		var title = last_a.attr('title');
-		console.log('Next: ', title);
+		console.log('Next: %c' + title, 'color: green');
 		setProgress(title);
 		return next_entry
 	}
@@ -219,10 +219,10 @@ $( document ).ready(function() {
 	function getWikiSentence(page_title){
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
 		var cat_query = $.getCachedJSON( cat_query_url, 100 );
-		cat_query.fail(function() { console.log("Error: ", cat_query_url); });
+		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
 		var text_query_url = wikiApiFirstSectionUrl(page_title);
 		var text_query = $.getCachedJSON( text_query_url, 100 );
-		text_query.fail(function() { console.log("Error: ", text_query_url); });
+		text_query.fail(function() { console.error("Error: ", text_query_url); });
 		
 		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
 			//var [cat_data, cat_status, cat_jqXHR] = cat_resp;

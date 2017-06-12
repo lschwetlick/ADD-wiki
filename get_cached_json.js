@@ -20,14 +20,13 @@ jQuery.extend({
 				return collection;
 			},{});
 			var timestamps = Object.keys(expiries);
-			// Find the 5 oldest entries (smallest timestamp) and remove them
+			// Find the n oldest entries (smallest timestamp) and remove them
 			for(var i = 0; i < n; i++){
 				var oldest = Math.min.apply(null,timestamps);
 				localStorage.removeItem(expiries[oldest]);
 			}
 		}
 
-		var supportsLocalStorage = 'localStorage' in window;
 		// Both functions 'getJSON' and 'getCache' return a promise
 		function getJSON(url) {
 			var promise = $.getJSON(url);
@@ -44,7 +43,7 @@ jQuery.extend({
 					localStorage.setItem(url, JSON.stringify(cache));
 				}
 			});
-			console.log('%c' + url + ' (AJAX)', 'color: orange');
+			console.log('%c' + '(AJAX) ' + url, 'color: orange');
 			return promise;
 		}
 
@@ -53,12 +52,14 @@ jQuery.extend({
 			if ( stored ) {
 				var validCache = (Date.now() - stored.timestamp) < cacheInvalidMs;
 				if ( validCache ) {
-					console.log('%c' + url + ' (localStorange)', 'color: blue');
+					console.log('%c' + '(localStorange) ' + url, 'color: blue');
 					var dfd = $.Deferred();
 					if ( cacheDelayMs > 0 ){
-						setTimeout(function() { dfd.resolve(stored.data); }, cacheDelayMs );
+						// simulate the delay of a real network request
+						// JQuery's AJAX functions return a tuple of the requested data and other attributes
+						setTimeout(function() { dfd.resolve([stored.data, 200]); }, cacheDelayMs );
 					} else {
-						dfd.resolve(stored.data);
+						dfd.resolve([stored.data, 200]);
 					}
 					return dfd.promise()
 				}
@@ -66,7 +67,7 @@ jQuery.extend({
 			return getJSON(url);
 		}
 
-		//return supportsLocalStorage ? getCache( url ) : getJSON( url );
-		return getJSON( url );
+		var supportsLocalStorage = 'localStorage' in window;
+		return supportsLocalStorage ? getCache( url ) : getJSON( url );
 	}
 });
