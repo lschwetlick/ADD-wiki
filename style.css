@@ -69,8 +69,9 @@ i#submit-btn-icon {
 @media screen and (min-width: 0px) and (max-width: 1265px) {
   #by { display: none; }  /* Hide on small screens */
 }
-@media screen and (min-width: 1266px) {
-  #my-content { display: block; }   /* show it otherwise */
+
+@media screen and (min-width: 0px) and (max-width: 950px) {
+  .minified { visibility: hidden; }  /* Hide on small screens */
 }
 
 .range-slider__value {

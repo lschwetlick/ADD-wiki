@@ -26,11 +26,13 @@ $( document ).ready(function() {
 			marginLeft: "20px",
 			marginTop: "20px"
 		});
+		$('#header-container').addClass('minified');
 		$('#logo-container').animate({
 			width: "3em",
 			marginLeft: "20px",
 			marginTop: "10px"
 		});
+		$('#logo-container').addClass('minified');
 		$('#settings-div').animate({
 			marginTop: '-140px',
 			paddingBottom: '20px'
