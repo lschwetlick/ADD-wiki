@@ -25,6 +25,18 @@ $( document ).ready(function() {
 
 	handleParams();
 
+	// Enable click handler to work for elements that are created dynamically
+	// Equivalent of deprecated .live()
+	$output.on("click", "a.internal", function(event) {
+		event.preventDefault();
+		var query = $(this).attr('href').split('#')[1];
+		handleParams(query);
+	});
+	$('#by').on("click", "a.internal", function(event) {
+		event.preventDefault();
+		handleParams($(this).attr('href'));
+	});
+
 	function minifyUI() {
 		$('#header-container').animate({
 			marginLeft: "20px",
@@ -43,11 +55,11 @@ $( document ).ready(function() {
 		});
 	}
 
-	function handleParams() {
-		var param = window.location.hash.substr(1);
-		console.log('param: ', param);
-		if (!param) { return }
-		$search.val(param.replace(/_/g,' '));
+	function handleParams(param) {
+		var query = param || window.location.hash.substr(1);
+		console.log('query: ', query);
+		if (!query) { return }
+		$search.val(query.replace(/_/g,' '));
 		$form.submit();
 	}
 
@@ -188,15 +200,18 @@ $( document ).ready(function() {
 	}
 
 	/* Append text to the page */
-	function appendSentences(sentence_dom, include_markup) {
+	function appendSentences(dom, include_markup) {
+		dom = dom.clone();
+		dom.find('a').each(function() {
+			$(this).attr('href', this.href.replace('/wiki/', '#'));
+			$(this).addClass('internal');
+		});
 		if ( include_markup ) {
-			sentence = sentence_dom.html();
+			sentence = dom.html();
 		} else {
-			sentence = sentence_dom.text();
+			sentence = dom.text();
 		}
-		$output.append(
-			$outputElement.clone().html(sentence)
-		);
+		$output.append($outputElement.clone().html(sentence));
 	}
 
 	function setProgress(title, done) {
@@ -230,10 +245,10 @@ $( document ).ready(function() {
 
 	function getWikiSentence(page_title){
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
-		var cat_query = $.getCachedJSON( cat_query_url, 100 );
+		var cat_query = $.getCachedJSON( cat_query_url, 200 );
 		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
 		var text_query_url = wikiApiFirstSectionUrl(page_title);
-		var text_query = $.getCachedJSON( text_query_url, 100 );
+		var text_query = $.getCachedJSON( text_query_url, 200 );
 		text_query.fail(function() { console.error("Error: ", text_query_url); });
 		
 		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
