@@ -1,16 +1,18 @@
 $( document ).ready(function() {
 	var $output = $('#articles');
 	var $outputElement = $('<p>');
+	var $form = $("form#wiki");
+	var $search = $form.find("input[type=search]");
 	var pageids = [];
 	var add_level;
 
 	/* Setup button handler */
-	$("form#wiki").submit(function( event ) {
+	$form.submit(function( event ) {
 		event.preventDefault();
 		$('#submit-btn').prop('disabled', true);
-		var start_article = $(this).find("input[type=search]").val();
+		var start_article = $search.val();
 		add_level = $(this).find("input[type=range]").val()
-		console.log("Start: ", start_article);
+		console.log('Start: %c' + start_article, 'color: green');
 		console.log("ADD level", add_level)
 		setProgress(start_article);
 		// Reset
@@ -20,6 +22,8 @@ $( document ).ready(function() {
 		minifyUI();
 		getWikiSentence(start_article);
 	});
+
+	handleParams();
 
 	function minifyUI() {
 		$('#header-container').animate({
@@ -37,6 +41,14 @@ $( document ).ready(function() {
 			marginTop: '-140px',
 			paddingBottom: '20px'
 		});
+	}
+
+	function handleParams() {
+		var param = window.location.hash.substr(1);
+		console.log('param: ', param);
+		if (!param) { return }
+		$search.val(param.replace(/_/g,' '));
+		$form.submit();
 	}
 
 	/* Returns the query URL for the Wikipedia API of a given page */
