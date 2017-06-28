@@ -24,10 +24,7 @@
 		<div id="logo-container" style="margin-left: auto; margin-right: auto; margin-top: 30px; width: 200px;">
 			<img id="logo" src="img/wiki_path.png" alt="Wikipedia logo" style="width: 100%">
 		</div>
-		<div id="settings-div" style="padding-bottom: 50px">
-			<div id="progress-display" style="margin-top: 30px; margin-bottom: 5px;">
-				<span id="progress" style="color: #717171">&emsp;</span>
-			</div>
+		<div id="settings-div" style="padding-bottom: 55px; margin-top: 30px;">
 			<form id="wiki" action="#">
 				<div id="text-input-div">
 					<input type="search" value="New York City" autocomplete="off" style="border: 1px solid #a2a9b1; border-radius: 2px; height: 2.6rem; line-height: 1.3; font-size: 1.1rem; padding: 8px; width: 250px;">
@@ -45,8 +42,17 @@
 		</div> <!-- settings-div -->
 	</div>
 
-	<div id="articles" style="margin-top: 180px; margin-bottom: 200px; padding-left: 15px; padding-right: 15px;"></div>
-	<div id="by" style="position: fixed; bottom: 5px; left: 5px; text-align: left; color: #717171; font-size: 0.9em;">
+	<div id="articles" style="margin-top: 180px; padding-left: 15px; padding-right: 15px;"></div>
+
+	<div id="progress-display" style="margin-top: 30px; margin-bottom: 150px;">
+		<span id="progress" style="color: #3a3a3a; font-size: 1.2em;">&emsp;</span>
+		<br>
+		<span id="scrollTop" style="display: none;">
+			Click any of the links, use the search box or <a href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');return false;">Read from the beginning</a>
+		</span>
+	</div>
+
+	<div id="by" style="position: fixed; bottom: 5px; left: 5px; text-align: left; color: #3a3a3a; font-size: 0.9em;">
 		Artisenal, hand-crafted HTML by<br>
 		<a href="https://twitter.com/Enemy_Anemone">@Enemy_Anemone</a> and <a href="https://twitter.com/chrisma0">@chrisma0</a>.<br>
 		Made with <3 in <a class="internal" href="Berlin">Berlin</a>.

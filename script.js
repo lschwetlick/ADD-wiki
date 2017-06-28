@@ -3,6 +3,8 @@ $( document ).ready(function() {
 	var $outputElement = $('<p>');
 	var $form = $("form#wiki");
 	var $search = $form.find("input[type=search]");
+	var $progress = $('#progress');
+	var $scrollTopLink = $('#scrollTop');
 	var pageids = [];
 	var add_level;
 
@@ -18,6 +20,7 @@ $( document ).ready(function() {
 		// Reset
 		pageids = [];
 		$output.empty();
+		$scrollTopLink.hide();
 		// Start
 		minifyUI();
 		getWikiSentence(start_article);
@@ -45,12 +48,12 @@ $( document ).ready(function() {
 		$('#header-container').addClass('minified');
 		$('#logo-container').animate({
 			width: "3em",
-			marginLeft: "20px",
+			marginLeft: "120px",
 			marginTop: "10px"
 		});
 		$('#logo-container').addClass('minified');
 		$('#settings-div').animate({
-			marginTop: '-140px',
+			marginTop: '-100px',
 			paddingBottom: '20px'
 		});
 	}
@@ -212,11 +215,12 @@ $( document ).ready(function() {
 			sentence = dom.text();
 		}
 		$output.append($outputElement.clone().html(sentence));
+		// Scroll to new bottom of page
+		$("html, body").animate({ scrollTop: $(document).height() }, 1);
 	}
 
-	function setProgress(title, done) {
-		var text = done ? 'Done!' : 'Looking up \'' + title + '\'...';
-		$('#progress').text(text);
+	function setProgress(title) {
+		$progress.text('Looking up \'' + title + '\'...');
 	}
 
 	/* Return whether the id was already queried, also stores passed ids */
@@ -238,17 +242,20 @@ $( document ).ready(function() {
 	}
 
 	// Cleanup after one query is finished
-	function done() {
+	function done(reason) {
 		$('#submit-btn').prop('disabled', false);
-		setProgress('', true);
+		var word_count = $output.text().trim().split(/\s+/).length;
+		console.log(word_count);
+		$progress.text('Done. ' + reason + '. ' + word_count + ' words written.');
+		$scrollTopLink.show();
 	}
 
 	function getWikiSentence(page_title){
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
-		var cat_query = $.getCachedJSON( cat_query_url, 200 );
+		var cat_query = $.getCachedJSON( cat_query_url, 250 );
 		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
 		var text_query_url = wikiApiFirstSectionUrl(page_title);
-		var text_query = $.getCachedJSON( text_query_url, 200 );
+		var text_query = $.getCachedJSON( text_query_url, 250 );
 		text_query.fail(function() { console.error("Error: ", text_query_url); });
 		
 		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
@@ -259,7 +266,10 @@ $( document ).ready(function() {
 			var pageid = cat_data.parse.pageid;
 			var section_text = text_data.parse.text["*"];
 			console.assert(pageid == text_data.parse.pageid, pageid, text_data.parse.pageid);
-			if ( isRepetition(pageid) ) { done(); return }
+			if ( isRepetition(pageid) ) {
+				done('Repetition detected for article: "' + page_title.replace(/_/g, ' ') + '"');
+				return
+			}
 			var categories = cat_data.parse.categories;
 			var isDis = categories.some(function(e){
 				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
@@ -274,7 +284,7 @@ $( document ).ready(function() {
 				var sentence_dom = parseToDOM(sentence);
 				// TODO checkbox for include_markup
 				appendSentences(sentence_dom, true);
-				if ( !next_entry_available ) { done(); return }
+				if ( !next_entry_available ) { done('No next Wiki page was found'); return }
 				var next_page = getNextEntryName(sentence_dom);
 				getWikiSentence(next_page);
 			}
