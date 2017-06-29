@@ -123,26 +123,6 @@ $( document ).ready(function() {
 		// The response comes wrapped in a 'mw-parser-output' div...
 		temp_dom = temp_dom.children('div.mw-parser-output').children('p, ul, ol:not(.references)');
 
-		// Remove References of the form '[1]''
-		// temp_dom.children('sup').remove();
-		temp_dom.find('sup').remove();
-		// Remove citations
-		temp_dom.children('.references').remove();
-		// temp_dom.find('.references').remove();
-		
-		// Trying to get rid of references that did not get removed in the children -> references.
-		// Sometimes the wiki is badly formatted like "Eastern Mediterranean"
-		temp_dom.find('span.reference-text').remove(); 
-		// The box showing coordinates is part of the main html
-		temp_dom.find('span#coordinates').remove();
-		// Remove links to pronunciation audio
-		temp_dom.find('span.noexcerpt').remove();
-		// Remove cite error that API returns
-		temp_dom.find('span.mw-ext-cite-error').remove();
-		// Remove images
-		temp_dom.find('img').remove();
-		// Remove audiolink help
-		temp_dom.find('small.metadata').remove();
 		var html = '';
 		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
 		console.log('Cleaned HTMl length:', html.length);

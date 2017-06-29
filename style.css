@@ -14,10 +14,6 @@ body {
 	line-height: 24px;
 }
 
-.visualhide {
-	display: none;
-}
-
 #submit-btn {
 	background-color: #36c;
 	border-color: #36c;
@@ -152,4 +148,20 @@ i#submit-btn-icon {
 input::-moz-focus-inner,
 input::-moz-focus-outer {
   border: 0;
+}
+
+
+/* Things to hide in Wikipedia articles */
+
+.visualhide,
+sup, /* References of the form [1] */
+.references, /* citation */
+span.reference-text, /* Sometimes the wiki is badly formatted like Eastern Mediterranean */
+span#coordinates, /* box showing coordinates is part of the main html */
+span.mw-ext-cite-error, /* cite error that API returns */
+small.metadata, /* audiolink help */
+span.fn, /* audio link */
+#articles img
+{
+	display: none;
 }
