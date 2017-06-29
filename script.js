@@ -186,8 +186,13 @@ $( document ).ready(function() {
 	function appendSentences(dom, include_markup) {
 		dom = dom.clone();
 		dom.find('a').each(function() {
-			$(this).attr('href', this.href.replace('/wiki/', '#'));
-			$(this).addClass('internal');
+			// Don't link to Wikipedia help pages
+			if ( $(this).attr('href').startsWith('/wiki/Help:') ) {
+				$(this).replaceWith($(this).text());
+			} else {
+				$(this).attr('href', this.href.replace('/wiki/', '#'));
+				$(this).addClass('internal');
+			}
 		});
 		if ( include_markup ) {
 			sentence = dom.html();
