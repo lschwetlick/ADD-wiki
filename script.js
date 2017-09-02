@@ -226,9 +226,21 @@ $( document ).ready(function() {
                         }
                     } //if
                     else if (text[i] == ')') {
+						console.log(text[i+1])
+						console.log(text[i+2])
+
                         counter = counter - 1;
                         if (counter == 0) {
-                            close_bracket_index = i + 2; //+1 is the bracket itself, +1 again for the space after it
+							if(text[i+1]="<"){
+								console.log("+1")
+								console.log(text[i+1])
+                            	close_bracket_index = i+1; //+1 is the bracket itself, +1 again for the space after it								
+							}else{
+								console.log("+2")
+								close_bracket_index = i + 2;
+							}
+							console.log("bracks")
+							console.log(text.slice(0, open_bracket_index) + text.slice(close_bracket_index-1))
                             return text.slice(0, open_bracket_index) + text.slice(close_bracket_index);
                         }
                     } //else if
@@ -344,9 +356,19 @@ $( document ).ready(function() {
 				
 			} else {
 				console.log("not dis")
+				console.log("section_text")
+				console.log(section_text)
 				var html = cleanWikiHTML(section_text);
+				console.log("html")
+				console.log(html)
+				
 				// Double because sometimes theres double brackets
-				html = removeFirstBracket(removeFirstBracket(html))
+				// html = removeFirstBracket(removeFirstBracket(html))
+				html = removeFirstBracket(html)
+				
+				console.log("html2")
+				console.log(html)
+
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
