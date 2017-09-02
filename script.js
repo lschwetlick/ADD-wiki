@@ -121,7 +121,26 @@ $( document ).ready(function() {
 		//TODO this breaks on "Magic"
 		//temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
 		// The response comes wrapped in a 'mw-parser-output' div...
+		console.log(temp_dom)
 		temp_dom = temp_dom.children('div.mw-parser-output').children('p, ul, ol:not(.references)');
+        
+		temp_dom.find('sup').remove();
+        // Remove citations
+        temp_dom.children('.references').remove();
+        // I am trying to get rid of references that did not get removed in the children -> references.
+        // Sometimes the wiki is badly formatted like "Eastern Mediterranean"
+        // temp_dom.find('.references').remove();
+        temp_dom.find('span.reference-text').remove();
+        //Removes little listen buttons
+        temp_dom.children('.metadata').remove();
+        // The box showing coordinates is part of the main html
+        temp_dom.find('span#coordinates').remove();
+        // Remove links to pronunciation audio
+        temp_dom.find('span.noexcerpt').remove();
+        // Remove cite error that API returns
+        temp_dom.find('span.mw-ext-cite-error').remove();
+
+
 
 		var html = '';
 		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
@@ -158,7 +177,10 @@ $( document ).ready(function() {
 			var i = html_string.indexOf(first_divider) + first_divider.length;
 			var constant_part = html_string.substring(0, i); 
 			var split_part = html_string.substring(i, html_string.length);
-			console.log(split_part);
+			// console.log(split_part);
+			
+			
+			
 			var divider = '</a>'
 			var split = split_part.split(divider);
 			if ( split.length > 1 ) {
@@ -170,6 +192,42 @@ $( document ).ready(function() {
 		// false: No link could be found. No next wiki page available
 		return [html_string, false]     	
 	} 
+
+	function removeFirstBracket(text) {
+        // how close to the beginning does it have to be be deleted? Remember all the html markup is in there as well
+        var chars_from_start = 250;
+        if (text.substring(0, chars_from_start).indexOf('(') != -1) {
+            console.log('Removing brackets');
+            open_bracket_index = null;
+            close_bracket_index = null;
+            counter = 0;
+            acounter = 0;
+            for (i = 0; i < text.length; i++) {
+                if (text[i] == '<' & text[i + 1] == 'a') {
+                    acounter = acounter + 1
+                } else if (text[i] == '/' & text[i + 1] == 'a' & text[i + 2] == '>') {
+                    acounter = acounter - 1
+                }
+
+                if (acounter == 0) {
+                    if (text[i] == '(') {
+                        counter = counter + 1;
+                        if (open_bracket_index == null) {
+                            open_bracket_index = i;
+                        }
+                    } //if
+                    else if (text[i] == ')') {
+                        counter = counter - 1;
+                        if (counter == 0) {
+                            close_bracket_index = i + 2; //+1 is the bracket itself, +1 again for the space after it
+                            return text.slice(0, open_bracket_index) + text.slice(close_bracket_index);
+                        }
+                    } //else if
+                } //if
+            } //for
+        } // if
+        return text
+    } //function
 
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
@@ -264,6 +322,9 @@ $( document ).ready(function() {
 				getWikiSentence(getFirstHref(section_text));
 			} else {
 				var html = cleanWikiHTML(section_text);
+				html = removeFirstBracket(html)
+				console.log("1 brack")
+				console.log(html)
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
