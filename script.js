@@ -43,7 +43,8 @@ $( document ).ready(function() {
 	function minifyUI() {
 		$('#header-container').animate({
 			marginLeft: "20px",
-			marginTop: "20px"
+			marginTop: "7px",
+			fontSize: "11pt"
 		});
 		$('#header-container').addClass('minified');
 		$('#logo-container').animate({
@@ -56,6 +57,15 @@ $( document ).ready(function() {
 			marginTop: '-100px',
 			paddingBottom: '20px'
 		});
+		// $('h1').animate({
+		// 	fontSize: '0.9em'
+		// });
+		// // $('span').animate({
+		// // 	fontSize: '1.2em'
+		// // });
+		// $('h2').animate({
+		// 	fontSize: '0.4em'
+		// });
 	}
 
 	function handleParams(param) {
