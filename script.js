@@ -162,6 +162,7 @@ $( document ).ready(function() {
 	function parseForSentence(html_string) {
 		if (add_level == 1){
 			// First link that ends a sentence
+			console.log(html_string)
 			var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
 			// Old fashioned iteration. [].forEach does not support breaking 
 			// out of the loop, see
@@ -172,6 +173,7 @@ $( document ).ready(function() {
 				if ( split.length > 1 ) {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
+					console.log(split[0] + divider)
 					return [split[0] + divider, true]
 				}
 			}
@@ -226,21 +228,13 @@ $( document ).ready(function() {
                         }
                     } //if
                     else if (text[i] == ')') {
-						console.log(text[i+1])
-						console.log(text[i+2])
-
                         counter = counter - 1;
                         if (counter == 0) {
 							if(text[i+1]="<"){
-								console.log("+1")
-								console.log(text[i+1])
                             	close_bracket_index = i+1; //+1 is the bracket itself, +1 again for the space after it								
 							}else{
-								console.log("+2")
 								close_bracket_index = i + 2;
 							}
-							console.log("bracks")
-							console.log(text.slice(0, open_bracket_index) + text.slice(close_bracket_index-1))
                             return text.slice(0, open_bracket_index) + text.slice(close_bracket_index);
                         }
                     } //else if
@@ -252,7 +246,6 @@ $( document ).ready(function() {
 
 	/* Return the name of the page linked to from the last <a> tag */
 	function getNextEntryName(sentence_dom) {
-		//TODO use first link and cut of the sentence to make it properly ADD.
 		var last_a = sentence_dom.find('a:last');
 		var next_entry = last_a.attr('href').split('/wiki/')[1];
 		var title = last_a.attr('title');
@@ -314,8 +307,16 @@ $( document ).ready(function() {
 		$scrollTopLink.show();
 	}
 
+	function ArticleNotFound(){
+		console.log("Oops that article doesn't seem to exist yet");
+		$progress.text("Oops, the article you tried to look up doesn't seem to exist yet")
+		$('#submit-btn').prop('disabled', false);
+		$scrollTopLink.show();
+	}
+
 	function getWikiSentence(page_title, escalateParagraph=0){
 		console.log(escalateParagraph)
+		
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
 		var cat_query = $.getCachedJSON( cat_query_url, 250 );
 		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
@@ -324,11 +325,17 @@ $( document ).ready(function() {
 		text_query.fail(function() { console.error("Error: ", text_query_url); });
 
 		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
-			//var [cat_data, cat_status, cat_jqXHR] = cat_resp;
-			var cat_data = cat_resp[0];
-			//var [text_data, text_status, text_jqXHR] = text_resp;
-			var text_data = text_resp[0];
-			var pageid = cat_data.parse.pageid;
+			try{
+				//var [cat_data, cat_status, cat_jqXHR] = cat_resp;
+				var cat_data = cat_resp[0];
+				//var [text_data, text_status, text_jqXHR] = text_resp;
+				var text_data = text_resp[0];
+				var pageid = cat_data.parse.pageid;
+			}
+			catch(err){
+				ArticleNotFound()
+				return
+			}
 			var section_text = text_data.parse.text["*"];
 			console.assert(pageid == text_data.parse.pageid, pageid, text_data.parse.pageid);
 			if(escalateParagraph<1){
@@ -356,18 +363,9 @@ $( document ).ready(function() {
 				
 			} else {
 				console.log("not dis")
-				console.log("section_text")
-				console.log(section_text)
-				var html = cleanWikiHTML(section_text);
-				console.log("html")
-				console.log(html)
-				
+				var html = cleanWikiHTML(section_text);				
 				// Double because sometimes theres double brackets
-				// html = removeFirstBracket(removeFirstBracket(html))
-				html = removeFirstBracket(html)
-				
-				console.log("html2")
-				console.log(html)
+				html = removeFirstBracket(removeFirstBracket(html))
 
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
@@ -376,6 +374,10 @@ $( document ).ready(function() {
 				appendSentences(sentence_dom, true);
 				if ( !next_entry_available ) { done('No next Wiki page was found'); return }
 				var next_page = getNextEntryName(sentence_dom);
+				if(next_page==undefined){
+					ArticleNotFound()
+					return
+				} //if
 				getWikiSentence(next_page);
 			}
 		}); //done
