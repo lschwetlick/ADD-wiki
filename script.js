@@ -67,7 +67,7 @@ $( document ).ready(function() {
 	}
 
 	/* Returns the query URL for the Wikipedia API of a given page */
-	function wikiApiFirstSectionUrl(page) {
+	function wikiApiFirstSectionUrl(page,escalateParagraph) {
 		var wiki_api_base = "https://en.wikipedia.org/w/api.php?"
 		params = {
 			action: "parse",
@@ -76,7 +76,7 @@ $( document ).ready(function() {
 			page: decodeURI(page),
 			redirects: 1,
 			prop: "text",
-			section: 0,
+			section: escalateParagraph,
 			disableeditsection: 1,
 			disabletoc: 1,
 			noimages: 1
@@ -195,7 +195,7 @@ $( document ).ready(function() {
 
 	function removeFirstBracket(text) {
         // how close to the beginning does it have to be be deleted? Remember all the html markup is in there as well
-        var chars_from_start = 250;
+        var chars_from_start = 350;
         if (text.substring(0, chars_from_start).indexOf('(') != -1) {
             console.log('Removing brackets');
             open_bracket_index = null;
@@ -278,9 +278,9 @@ $( document ).ready(function() {
 
 	function getFirstHref(html_string) {
 		var dom = parseToDOM(cleanWikiHTML(html_string));
-		var first_a = dom.find('a:first');
-		var next_entry = first_a.attr('href').split('/wiki/')[1];
-		console.log('Next: ', first_a.attr('title'));
+			var first_a = dom.find('a:first');
+			var next_entry = first_a.attr('href').split('/wiki/')[1];
+			console.log('Next: ', first_a.attr('title'));
 		return next_entry
 	}
 
@@ -293,14 +293,15 @@ $( document ).ready(function() {
 		$scrollTopLink.show();
 	}
 
-	function getWikiSentence(page_title){
+	function getWikiSentence(page_title, escalateParagraph=0){
+		console.log(escalateParagraph)
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
 		var cat_query = $.getCachedJSON( cat_query_url, 250 );
 		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
-		var text_query_url = wikiApiFirstSectionUrl(page_title);
+		var text_query_url = wikiApiFirstSectionUrl(page_title,escalateParagraph);
 		var text_query = $.getCachedJSON( text_query_url, 250 );
 		text_query.fail(function() { console.error("Error: ", text_query_url); });
-		
+
 		$.when( cat_query, text_query ).done( function(cat_resp, text_resp){
 			//var [cat_data, cat_status, cat_jqXHR] = cat_resp;
 			var cat_data = cat_resp[0];
@@ -309,22 +310,32 @@ $( document ).ready(function() {
 			var pageid = cat_data.parse.pageid;
 			var section_text = text_data.parse.text["*"];
 			console.assert(pageid == text_data.parse.pageid, pageid, text_data.parse.pageid);
-			if ( isRepetition(pageid) ) {
-				done('Repetition detected for article: "' + page_title.replace(/_/g, ' ') + '"');
-				return
+			if(escalateParagraph<1){
+				if ( isRepetition(pageid) ) {
+					done('Repetition detected for article: "' + page_title.replace(/_/g, ' ') + '"');
+					return
+				}
 			}
 			var categories = cat_data.parse.categories;
 			var isDis = categories.some(function(e){
 				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
 			});
 			if ( isDis ) {
-				console.log('Disambiguation page found: ', cat_data.parse.title);
-				getWikiSentence(getFirstHref(section_text));
+				console.log('Disambiguation page found: ', cat_data.parse.title);				
+				try{
+				var firstHref=getFirstHref(section_text)
+				}
+				catch(err){
+					console.log("escalating paragraph")
+					getWikiSentence(page_title,1)
+				}
+
+				
+				getWikiSentence(firstHref);
 			} else {
+				console.log("not dis")
 				var html = cleanWikiHTML(section_text);
 				html = removeFirstBracket(html)
-				console.log("1 brack")
-				console.log(html)
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
