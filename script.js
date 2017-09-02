@@ -151,6 +151,7 @@ $( document ).ready(function() {
 	/* Returns a text up to a sentence that ends with an <a> tag */
 	function parseForSentence(html_string) {
 		if (add_level == 1){
+			// First link that ends a sentence
 			var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
 			// Old fashioned iteration. [].forEach does not support breaking 
 			// out of the loop, see
@@ -166,6 +167,7 @@ $( document ).ready(function() {
 			}
 		}
 		else if (add_level == 3){
+			// First link no matter what
 			var divider = '</a>'
 			var split = html_string.split(divider);
 			if ( split.length > 1 ) {
@@ -173,14 +175,11 @@ $( document ).ready(function() {
 			}
 		}
 		else if (add_level == 2){
+			// First link after subject
 			var first_divider = '</b>';
 			var i = html_string.indexOf(first_divider) + first_divider.length;
 			var constant_part = html_string.substring(0, i); 
-			var split_part = html_string.substring(i, html_string.length);
-			// console.log(split_part);
-			
-			
-			
+			var split_part = html_string.substring(i, html_string.length);	
 			var divider = '</a>'
 			var split = split_part.split(divider);
 			if ( split.length > 1 ) {
@@ -195,7 +194,7 @@ $( document ).ready(function() {
 
 	function removeFirstBracket(text) {
         // how close to the beginning does it have to be be deleted? Remember all the html markup is in there as well
-        var chars_from_start = 350;
+        var chars_from_start = 500;
         if (text.substring(0, chars_from_start).indexOf('(') != -1) {
             console.log('Removing brackets');
             open_bracket_index = null;
@@ -328,14 +327,16 @@ $( document ).ready(function() {
 				catch(err){
 					console.log("escalating paragraph")
 					getWikiSentence(page_title,1)
+					return
 				}
 
-				
 				getWikiSentence(firstHref);
+				
 			} else {
 				console.log("not dis")
 				var html = cleanWikiHTML(section_text);
-				html = removeFirstBracket(html)
+				// Double because sometimes theres double brackets
+				html = removeFirstBracket(removeFirstBracket(html))
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
