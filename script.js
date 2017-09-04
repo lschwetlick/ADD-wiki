@@ -1,3 +1,9 @@
+var stopNow=false;
+function myFunction() {
+    alert("aaah")
+	var stopNow=true;
+}
+
 $( document ).ready(function() {
 	var $output = $('#articles');
 	var $outputElement = $('<p>');
@@ -44,7 +50,7 @@ $( document ).ready(function() {
 		$('#header-container').animate({
 			marginLeft: "20px",
 			marginTop: "7px",
-			fontSize: "11pt"
+			fontSize: "10pt"
 		});
 		$('#header-container').addClass('minified');
 		$('#logo-container').animate({
@@ -315,8 +321,12 @@ $( document ).ready(function() {
 	}
 
 	function getWikiSentence(page_title, escalateParagraph=0){
+		page_title= page_title.toLowerCase();
+		// console.log("stopNow")
+		// console.log(stopNow)
+		// if (stopNow) {console.log("manual abort");return;}
 		console.log(escalateParagraph)
-		
+
 		var cat_query_url = wikiApiCategoriesUrl(page_title);
 		var cat_query = $.getCachedJSON( cat_query_url, 250 );
 		cat_query.fail(function() { console.error("Error: ", cat_query_url); });
