@@ -139,7 +139,7 @@ $( document ).ready(function() {
 		// The response comes wrapped in a 'mw-parser-output' div...
 		console.log(temp_dom)
 		temp_dom = temp_dom.children('div.mw-parser-output').children('p, ul, ol:not(.references)');
-        
+
 		temp_dom.find('sup').remove();
         // Remove citations
         temp_dom.children('.references').remove();
@@ -156,8 +156,6 @@ $( document ).ready(function() {
         // Remove cite error that API returns
         temp_dom.find('span.mw-ext-cite-error').remove();
 
-
-
 		var html = '';
 		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
 		console.log('Cleaned HTMl length:', html.length);
@@ -170,12 +168,12 @@ $( document ).ready(function() {
 			// First link that ends a sentence
 			console.log(html_string)
 			var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
-			// Old fashioned iteration. [].forEach does not support breaking 
+			// Old fashioned iteration. [].forEach does not support breaking
 			// out of the loop, see
 			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
 			for(var i = 0; i < dividers.length; i++) {
 				var divider = '</a>' + dividers[i];
-				var split = html_string.split(divider);	
+				var split = html_string.split(divider);
 				if ( split.length > 1 ) {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
@@ -196,19 +194,19 @@ $( document ).ready(function() {
 			// First link after subject
 			var first_divider = '</b>';
 			var i = html_string.indexOf(first_divider) + first_divider.length;
-			var constant_part = html_string.substring(0, i); 
-			var split_part = html_string.substring(i, html_string.length);	
+			var constant_part = html_string.substring(0, i);
+			var split_part = html_string.substring(i, html_string.length);
 			var divider = '</a>'
 			var split = split_part.split(divider);
 			if ( split.length > 1 ) {
 				return [constant_part + split[0] + divider + '&mdash;', true]
 			}
-			
+
 		}
 		console.log('No next wiki page');
 		// false: No link could be found. No next wiki page available
-		return [html_string, false]     	
-	} 
+		return [html_string, false]
+	}
 
 	function removeFirstBracket(text) {
         // how close to the beginning does it have to be be deleted? Remember all the html markup is in there as well
@@ -237,7 +235,7 @@ $( document ).ready(function() {
                         counter = counter - 1;
                         if (counter == 0) {
 							if(text[i+1]="<"){
-                            	close_bracket_index = i+1; //+1 is the bracket itself, +1 again for the space after it								
+                            	close_bracket_index = i+1; //+1 is the bracket itself, +1 again for the space after it
 							}else{
 								close_bracket_index = i + 2;
 							}
@@ -356,10 +354,10 @@ $( document ).ready(function() {
 			}
 			var categories = cat_data.parse.categories;
 			var isDis = categories.some(function(e){
-				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
+				return e["*"].toLowerCase().indexOf('disambiguation') > -1
 			});
 			if ( isDis ) {
-				console.log('Disambiguation page found: ', cat_data.parse.title);				
+				console.log('Disambiguation page found: ', cat_data.parse.title);
 				try{
 				var firstHref=getFirstHref(section_text)
 				}
@@ -370,10 +368,10 @@ $( document ).ready(function() {
 				}
 
 				getWikiSentence(firstHref);
-				
+
 			} else {
 				console.log("not dis")
-				var html = cleanWikiHTML(section_text);				
+				var html = cleanWikiHTML(section_text);
 				// Double because sometimes theres double brackets
 				html = removeFirstBracket(removeFirstBracket(html))
 
