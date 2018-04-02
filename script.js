@@ -12,6 +12,7 @@ $( document ).ready(function() {
 	var $progress = $('#progress');
 	var $scrollTopLink = $('#scrollTop');
 	var pageids = [];
+	var total_pageids=[];
 	var add_level;
 
 	/* Setup button handler */
@@ -24,11 +25,17 @@ $( document ).ready(function() {
 		console.log("ADD level", add_level)
 		setProgress(start_article);
 		// Reset
+		total_pageids.push(pageids);
+		console.log("this pass id list:")
+		console.log(pageids.length)
+		console.log("total id list:")
+		console.log(total_pageids.length)
 		pageids = [];
 		$output.empty();
 		$scrollTopLink.hide();
 		// Start
 		minifyUI();
+		// getWikiSentence(start_article.toLowerCase());
 		getWikiSentence(start_article);
 	});
 
@@ -134,12 +141,10 @@ $( document ).ready(function() {
 	/* Return HTML without elements that should not be rendered */
 	function cleanWikiHTML(html_string) {
 		temp_dom = parseToDOM(html_string);
-		//TODO this breaks on "Magic"
 		//temp_dom = temp_dom.children('p, ul, ol').first().nextUntil('h2', 'p, ul, ol');
 		// The response comes wrapped in a 'mw-parser-output' div...
-		console.log(temp_dom)
 		temp_dom = temp_dom.children('div.mw-parser-output').children('p, ul, ol:not(.references)');
-
+        
 		temp_dom.find('sup').remove();
         // Remove citations
         temp_dom.children('.references').remove();
@@ -156,6 +161,8 @@ $( document ).ready(function() {
         // Remove cite error that API returns
         temp_dom.find('span.mw-ext-cite-error').remove();
 
+
+
 		var html = '';
 		temp_dom.each(function() { html += $(this).prop('outerHTML'); });
 		console.log('Cleaned HTMl length:', html.length);
@@ -166,14 +173,13 @@ $( document ).ready(function() {
 	function parseForSentence(html_string) {
 		if (add_level == 1){
 			// First link that ends a sentence
-			console.log(html_string)
 			var dividers = ['.', ').', ';', ');', '!', ')!', '?', ')?', '</li>']; // wont this ignore instances of ";" or "!" even if they come before the first "."???
-			// Old fashioned iteration. [].forEach does not support breaking
+			// Old fashioned iteration. [].forEach does not support breaking 
 			// out of the loop, see
 			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
 			for(var i = 0; i < dividers.length; i++) {
 				var divider = '</a>' + dividers[i];
-				var split = html_string.split(divider);
+				var split = html_string.split(divider);	
 				if ( split.length > 1 ) {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
@@ -194,19 +200,19 @@ $( document ).ready(function() {
 			// First link after subject
 			var first_divider = '</b>';
 			var i = html_string.indexOf(first_divider) + first_divider.length;
-			var constant_part = html_string.substring(0, i);
-			var split_part = html_string.substring(i, html_string.length);
+			var constant_part = html_string.substring(0, i); 
+			var split_part = html_string.substring(i, html_string.length);	
 			var divider = '</a>'
 			var split = split_part.split(divider);
 			if ( split.length > 1 ) {
 				return [constant_part + split[0] + divider + '&mdash;', true]
 			}
-
+			
 		}
 		console.log('No next wiki page');
 		// false: No link could be found. No next wiki page available
-		return [html_string, false]
-	}
+		return [html_string, false]     	
+	} 
 
 	function removeFirstBracket(text) {
         // how close to the beginning does it have to be be deleted? Remember all the html markup is in there as well
@@ -228,17 +234,21 @@ $( document ).ready(function() {
                     if (text[i] == '(') {
                         counter = counter + 1;
                         if (open_bracket_index == null) {
-                            open_bracket_index = i;
+							if (text[i-1] ==' '){
+								open_bracket_index = i-1;
+							}else{
+                            	open_bracket_index = i;
+							}
                         }
                     } //if
                     else if (text[i] == ')') {
                         counter = counter - 1;
                         if (counter == 0) {
-							if(text[i+1]="<"){
-                            	close_bracket_index = i+1; //+1 is the bracket itself, +1 again for the space after it
-							}else{
-								close_bracket_index = i + 2;
-							}
+							// if(text[i+1]="<"){
+                            close_bracket_index = i+1; 							
+							// }else{
+								// close_bracket_index = i + 2;//+1 is the bracket itself, +1 again for the space after it	
+							// }
                             return text.slice(0, open_bracket_index) + text.slice(close_bracket_index);
                         }
                     } //else if
@@ -288,6 +298,12 @@ $( document ).ready(function() {
 	function isRepetition(page_id) {
 		if ( pageids.indexOf(page_id) > -1 ) {
 			console.log('Repetition detected.');
+			console.log("this pass id list:")
+			console.log(pageids.length)
+			console.log("total id list:")
+			console.log(total_pageids.length)
+			
+			console.log([].concat.apply([], total_pageids)) //flatten
 			return true
 		}
 		pageids.push(page_id);
@@ -319,7 +335,7 @@ $( document ).ready(function() {
 	}
 
 	function getWikiSentence(page_title, escalateParagraph=0){
-		page_title= page_title.toLowerCase();
+		// 
 		// console.log("stopNow")
 		// console.log(stopNow)
 		// if (stopNow) {console.log("manual abort");return;}
@@ -354,10 +370,10 @@ $( document ).ready(function() {
 			}
 			var categories = cat_data.parse.categories;
 			var isDis = categories.some(function(e){
-				return e["*"].toLowerCase().indexOf('disambiguation') > -1
+				return e["*"].toLowerCase().indexOf('disambiguation') > -1 
 			});
 			if ( isDis ) {
-				console.log('Disambiguation page found: ', cat_data.parse.title);
+				console.log('Disambiguation page found: ', cat_data.parse.title);				
 				try{
 				var firstHref=getFirstHref(section_text)
 				}
@@ -368,12 +384,12 @@ $( document ).ready(function() {
 				}
 
 				getWikiSentence(firstHref);
-
+				
 			} else {
 				console.log("not dis")
-				var html = cleanWikiHTML(section_text);
+				var html = cleanWikiHTML(section_text);				
 				// Double because sometimes theres double brackets
-				html = removeFirstBracket(removeFirstBracket(html))
+				html = removeFirstBracket(removeFirstBracket(removeFirstBracket(html)))
 
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
