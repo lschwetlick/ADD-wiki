@@ -184,6 +184,15 @@ $( document ).ready(function() {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
 					console.log(split[0] + divider)
+
+					var re= /<a.+title=\".+:.[^>]+\">/;
+					if ( re.exec(split[0])!=null ){
+						console.log("first link is Wiktionary or External. Ignoring")
+						var cut_el0 = split[0].replace(re, '');
+						var new_el1=cut_el0.concat(split[1]);
+						split=[new_el1, split.slice(2)];
+					}
+
 					return [split[0] + divider, true]
 				}
 			}
@@ -211,7 +220,6 @@ $( document ).ready(function() {
 				var cut_el0 = split[0].replace(re, '');
 				var new_el1=cut_el0.concat(split[1]);
 				split=[new_el1, split.slice(2)];
-				console.log(split)
 			}
 
 			if ( split.length > 1 ) {
