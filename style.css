@@ -14,6 +14,25 @@ body {
 	line-height: 24px;
 }
 
+#stop-btn {
+  /* position: absolute; */
+  background-color:#870014;
+	border-color: #870014;
+  border: 1px solid rgb(50, 1, 1);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+i#stop-btn-icon {
+  background-image: url(img/stop.png);
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 #submit-btn {
 	background-color: #36c;
 	border-color: #36c;

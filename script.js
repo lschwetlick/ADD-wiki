@@ -1,7 +1,7 @@
 var stopNow=false;
-function myFunction() {
-    alert("aaah")
-	var stopNow=true;
+function stopClick() {
+	console.log("STOP NOW")
+	stopNow=true;
 }
 
 $( document ).ready(function() {
@@ -310,6 +310,7 @@ $( document ).ready(function() {
 
 	function setProgress(title) {
 		$progress.text('Looking up \'' + title + '\'...');
+		$("#stop-btn").css("display", "block");
 	}
 
 	/* Return whether the id was already queried, also stores passed ids */
@@ -342,6 +343,7 @@ $( document ).ready(function() {
 		var word_count = $output.text().trim().split(/\s+/).length;
 		console.log(word_count);
 		$progress.text('Done. ' + reason + '. ' + word_count + ' words written.');
+		$("#stop-btn").css("display", "none");
 		$scrollTopLink.show();
 	}
 
@@ -349,6 +351,15 @@ $( document ).ready(function() {
 		console.log("Oops that article doesn't seem to exist yet");
 		$progress.text("Oops, the article you tried to look up doesn't seem to exist yet")
 		$('#submit-btn').prop('disabled', false);
+		$("#stop-btn").css("display", "none");
+		$scrollTopLink.show();
+	}
+
+	function ManualStop(){
+		console.log("Too ADD for you?");
+		$progress.text("Too ADD for you?")
+		$('#submit-btn').prop('disabled', false);
+		$("#stop-btn").css("display", "none");
 		$scrollTopLink.show();
 	}
 
@@ -423,6 +434,14 @@ $( document ).ready(function() {
 					ArticleNotFound()
 					return
 				} //if
+				
+				console.log("stop Now?",stopNow)
+				if(stopNow){
+					ManualStop()
+					stopNow=false;
+					return
+				}
+
 				getWikiSentence(next_page);
 			}
 		}); //done

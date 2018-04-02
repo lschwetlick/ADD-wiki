@@ -49,11 +49,17 @@
 
 	<div id="progress-display" style="margin-top: 30px; margin-bottom: 150px;">
 		<span id="progress" style="color: #3a3a3a; font-size: 1.2em;">&emsp;</span>
-		<!--<button onclick="myFunction()">Stop</button>-->
+
 		<br>
 		<span id="scrollTop" style="display: none;">
 			Click any of the links, use the search box or <a href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');return false;">Read from the beginning</a>
 		</span>
+
+		<button id="stop-btn" style="display: none;" type="button" onclick="stopClick()" style="color: #fff; font-size: 1.1rem; line-height: 1.3; border-radius: 2px; vertical-align:top; height: 2.6rem; width: 3.2rem; margin-left: 8px;">
+				<i id="stop-btn-icon"></i>
+		</button>
+			<!-- https://thenounproject.com/search/?q=stop&i=955412#_=_ -->
+
 	</div>
 
 	<div id="by" style="position: fixed; bottom: 5px; left: 5px; text-align: left; color: #3a3a3a; font-size: 0.9em;">
