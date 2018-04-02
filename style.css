@@ -77,12 +77,21 @@ i#submit-btn-icon {
   border-color: #d7dcdf;
 }
 
+#search-hist{
+  position: relative;
+  /* bottom:0;
+  right:0; */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 #by a, by a:visited {
   color: #717171;
 }
 
 @media screen and (min-width: 0px) and (max-width: 1265px) {
   #by { display: none; }  /* Hide on small screens */
+  #search-hist{ display: none; }
 }
 
 @media screen and (min-width: 0px) and (max-width: 950px) {

@@ -5,6 +5,21 @@ function stopClick() {
 }
 
 $( document ).ready(function() {
+	var searchHist = document.getElementById('search-hist');
+	// var data = [
+	// 	{
+	// 	  histfunc: "count",
+	// 	  x: ["Apples","Apples","Apples","Organges", "Bananas"],
+	// 	  type: "histogram",
+	// 	  name: "count"
+	// 	}
+	//   ]
+	// Plotly.newPlot(searchHist, data)
+	// Plotly.plot( searchHist, [{histfunc: "count",
+	// 	x: ["orange", "asd", "ert", "hhh", "mnb", "hhh"] }], {
+	// 	margin: { t: 0 } } );
+
+
 	var $output = $('#articles');
 	var $outputElement = $('<p>');
 	var $form = $("form#wiki");
@@ -14,6 +29,7 @@ $( document ).ready(function() {
 	var pageids = [];
 	var total_pageids=[];
 	var add_level;
+	var all_page_names=[];
 
 	/* Setup button handler */
 	$form.submit(function( event ) {
@@ -184,7 +200,7 @@ $( document ).ready(function() {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
 					// console.log(split[0] + divider)
-					console.log(split)
+					// console.log(split)
 					var re= /<a.[^>]+title=\".[^>]+:.[^>]+\">/;
 					console.log(re.exec(split[0]))
 
@@ -314,6 +330,7 @@ $( document ).ready(function() {
 	function setProgress(title) {
 		$progress.text('Looking up \'' + title + '\'...');
 		$("#stop-btn").css("display", "block");
+		$("#search-hist").css("display", "none");
 	}
 
 	/* Return whether the id was already queried, also stores passed ids */
@@ -348,6 +365,7 @@ $( document ).ready(function() {
 		$progress.text('Done. ' + reason + '. ' + word_count + ' words written.');
 		$("#stop-btn").css("display", "none");
 		$scrollTopLink.show();
+		// ShowStats()
 	}
 
 	function ArticleNotFound(){
@@ -356,6 +374,7 @@ $( document ).ready(function() {
 		$('#submit-btn').prop('disabled', false);
 		$("#stop-btn").css("display", "none");
 		$scrollTopLink.show();
+		// ShowStats();
 	}
 
 	function ManualStop(){
@@ -364,6 +383,21 @@ $( document ).ready(function() {
 		$('#submit-btn').prop('disabled', false);
 		$("#stop-btn").css("display", "none");
 		$scrollTopLink.show();
+		// ShowStats();
+	}
+
+	function ShowStats(){
+		$("#search-hist").css("display", "block");
+
+		var data = [
+			{
+			  histfunc: "count",
+			  x: all_page_names,
+			  type: "histogram",
+			  name: "count"
+			}
+		  ]
+		Plotly.newPlot(searchHist, data, {title: 'Page Occurences'})
 	}
 
 	function getWikiSentence(page_title, escalateParagraph=0){
@@ -396,6 +430,7 @@ $( document ).ready(function() {
 			if(escalateParagraph<1){
 				if ( isRepetition(pageid) ) {
 					done('Repetition detected for article: "' + page_title.replace(/_/g, ' ') + '"');
+					console.log(all_page_names)
 					return
 				}
 			}
@@ -426,9 +461,6 @@ $( document ).ready(function() {
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
 
-				console.log('sentenceDom')
-				console.log(sentence_dom)
-
 				// TODO checkbox for include_markup
 				appendSentences(sentence_dom, true);
 				if ( !next_entry_available ) { done('No next Wiki page was found'); return }
@@ -444,9 +476,10 @@ $( document ).ready(function() {
 					stopNow=false;
 					return
 				}
-
+				all_page_names=all_page_names.concat(next_page)
 				getWikiSentence(next_page);
 			}
 		}); //done
 	} //getWikiSentence
+
 }); //document.ready
