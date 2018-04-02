@@ -204,6 +204,16 @@ $( document ).ready(function() {
 			var split_part = html_string.substring(i, html_string.length);	
 			var divider = '</a>'
 			var split = split_part.split(divider);
+
+			var re= /<a.+title=\".+:.[^>]+\">/;
+			if ( re.exec(split[0])!=null ){
+				console.log("first link is Wiktionary or External. Ignoring")
+				var cut_el0 = split[0].replace(re, '');
+				var new_el1=cut_el0.concat(split[1]);
+				split=[new_el1, split.slice(2)];
+				console.log(split)
+			}
+
 			if ( split.length > 1 ) {
 				return [constant_part + split[0] + divider + '&mdash;', true]
 			}
@@ -337,7 +347,6 @@ $( document ).ready(function() {
 	function getWikiSentence(page_title, escalateParagraph=0){
 		// 
 		// console.log("stopNow")
-		// console.log(stopNow)
 		// if (stopNow) {console.log("manual abort");return;}
 		console.log(escalateParagraph)
 
@@ -394,6 +403,10 @@ $( document ).ready(function() {
 				//TODO Do not return next_entry_available here, make getNextEntryName check
 				var [sentence, next_entry_available] = parseForSentence(html);
 				var sentence_dom = parseToDOM(sentence);
+
+				console.log('sentenceDom')
+				console.log(sentence_dom)
+
 				// TODO checkbox for include_markup
 				appendSentences(sentence_dom, true);
 				if ( !next_entry_available ) { done('No next Wiki page was found'); return }
