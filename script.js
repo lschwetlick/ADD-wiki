@@ -183,9 +183,12 @@ $( document ).ready(function() {
 				if ( split.length > 1 ) {
 					//TODO make "ADD-level" configurable, e.g. use last possible link
 					// true: Continue, sentence has a link at the end
-					console.log(split[0] + divider)
+					// console.log(split[0] + divider)
+					console.log(split)
+					var re= /<a.[^>]+title=\".[^>]+:.[^>]+\">/;
+					console.log(re.exec(split[0]))
 
-					var re= /<a.+title=\".+:.[^>]+\">/;
+
 					if ( re.exec(split[0])!=null ){
 						console.log("first link is Wiktionary or External. Ignoring")
 						var cut_el0 = split[0].replace(re, '');
@@ -214,7 +217,7 @@ $( document ).ready(function() {
 			var divider = '</a>'
 			var split = split_part.split(divider);
 
-			var re= /<a.+title=\".+:.[^>]+\">/;
+			var re= /<a.[^>]+title=\".[^>]+:.[^>]+\">/;
 			if ( re.exec(split[0])!=null ){
 				console.log("first link is Wiktionary or External. Ignoring")
 				var cut_el0 = split[0].replace(re, '');
@@ -317,10 +320,10 @@ $( document ).ready(function() {
 	function isRepetition(page_id) {
 		if ( pageids.indexOf(page_id) > -1 ) {
 			console.log('Repetition detected.');
-			console.log("this pass id list:")
-			console.log(pageids.length)
-			console.log("total id list:")
-			console.log(total_pageids.length)
+			// console.log("this pass id list:")
+			// console.log(pageids.length)
+			// console.log("total id list:")
+			// console.log(total_pageids.length)
 			
 			console.log([].concat.apply([], total_pageids)) //flatten
 			return true
